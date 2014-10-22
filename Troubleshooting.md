@@ -10,7 +10,7 @@ Error in waitbar (line 53)
     if  isempty(h) || ~ishandle(h(1)); h =
     buildwaitbar(X,message);	
 ```
-==============	
+
 #### Solution:
 Just run the script again, seems to be some time-out issue in matlab, not sure what.
 
@@ -26,7 +26,6 @@ Error in cprintf (line 199)
   drawnow;
 ```
 
-==============	
 #### Solution:
 Just close all matlab figures and run the script again, seems to be some hang/time-out issue in matlab, not sure what.
 
@@ -50,7 +49,6 @@ Error in ==> waitbar at 53
     if  isempty(h) || ~ishandle(h(1)); h = buildwaitbar(X,message);
 ```
 	
-==============	
 #### Solution:
 Just run the script again, seems to be some time-out issue in matlab, not sure what.
 
@@ -66,7 +64,6 @@ Error in ==> createallDetections_plusGT_and_NoCrowds at 156
         '/allD.txt'])
 ```
 
-==============	
 #### Solution:
 Just run the script again
 
@@ -83,6 +80,5 @@ Error in ==> fullPipeLineScript at 64
 crop();
 ```
 
-==============	
 #### Solution:
 Check that the corresponding *.seq file was correctly downloaded, and/or download it again.
