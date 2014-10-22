@@ -7,7 +7,7 @@ To download this dataset, contact (alex at isr ist utl pt)
 
 ### Getting Started
 
-* To visualize the dataset with overlaying manual annotations run MATlab script HDA_Dataset\hda_code\visualization\ RunToVisualize.m and do the following steps:
+* To visualize the dataset with overlaying manual annotations run MATlab script `HDA_Dataset\hda_code\visualization\ RunToVisualize.m` and do the following steps:
 
  1. On the window that shall appear named "VBB Labeler" click on the menu "Video -> Open"
  2. Select a *.SEQ file from the folder “hda_image_sequences_matlab”
