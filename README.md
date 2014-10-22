@@ -18,8 +18,8 @@ To download this dataset, contact (alex at isr ist utl pt)
 * To see a running example of a sample re-identification algorithm plus the evaluation code, do the following:
 
  1. **Open** `HDA_Dataset\hda_code\detection_reid_pipeline\ Computer_Specific_Dataset_Directory.m`,
- 2. Set the `hdaRootDirectory` variable,
- 3. Add to the Matlab path the hda_code folder (fill in the `addpath(genpath( ... ))` ),,
+ 2. Set the `hdaRootDirectory` variable to the path where you put the `HDA_Dataset`,
+ 3. Add to the Matlab path the `hda_code` folder (fill in the `addpath(genpath( ... ))` ),,
  4. and then run the MATlab script `HDA_Dataset\hda_code\detection_reid_pipeline\ fullPipeLineScript.m` 
 (more information in [hda_code/GettingStarted.txt](https://github.com/vislab-tecnico-lisboa/hda_code/blob/master/GettingStarted.txt))
 
