@@ -1,0 +1,90 @@
+#####################
+=== Introduction: ===
+#####################
+
+To get a flavour of what this project does, you can run a re-identification experiment by running this script: "fullPipeLineScript.m".
+
+This script runs an example re-identification algorithm on the HDA dataset and displays evaluation in the form of a CMC and a Precision-Recall curve.
+
+The main script is located in the "hda_code\detection_reid_pipeline\" folder.
+Prior to running it, you must set the "hdaRootDirectory" variable to the path where you downloaded the HDA dataset to, and add to the MATlab's path the "hda_code" folder.
+i.e.,:  hdaRootDirectory ='/home/dario/Desktop/WorkNoSync/HDA_Dataset';
+        addpath(genpath('/home/dario/Desktop/Dropbox/Work/hda_code'));
+
+This example (named '001') uses the detections provided by the ACF pedestrian detector (named 'AcfInria'). Among others, it creates the following folders inside the the "HDA_Dataset" folder:
+
+	hda_experiment_data
+	hda_experiment_data\AcfInria_001
+	hda_experiment_data\AcfInria_001\camera60
+	hda_experiment_data\AcfInria_001\camera60\FilteredCrops
+	
+Inside the "FilteredCrops" folder, it creates the "allF.txt" file that is the INPUT to the re-identification stage. The designed input format is:
+  - One line per detection with the following format: [camera#, frame#, x0, y0, width, height, active_bit] 
+  
+    -- camera number: the id of the camera where this detection happened, may be one of the following [02 17 18 19 40 50 53 54 56 57 58 59 60]
+    -- frame number: the frame in the video when this detection happened, starts with 1.
+    -- the four numbers defining a bounding-box, (origin in the top-left corner of the image)
+    -- and the active bit, that is set to 0 if this detection was rejected by the occlusion filter or some other reason.
+ 
+The re-identification wrapper (reIdentificationWrapper.m) is called by the main script (fullPipeLineScript.m). This example applies the Nearest Neighbour classifier, with Bhattacharrya distance (named 'BhattacharryaNNReId'), and creates the following folder:
+	hda_experiment_data\AcfInria_001\camera60\ReIds_BhattacharryaNNReId
+
+And inside it creates the allR.txt file, which is the designed OUTPUT file of the re-identification, and the designed input to the evaluation code that will generate a CMC and a Precision/Recall curve. The designed output format is:
+  - One line per corresponding detection with the following format: [camera#, frame#, x0, y0, width, height, estimatedIdRank1, estimatedIdRank2, ... ](the line is left empty if the "active bit" was set to zero)	
+  
+    -- [camera#, frame#, x0, y0, width, height] is the same format as the input
+    -- [estimatedIdRank1, estimatedIdRank2, ...] is the ranked list of estimated IDs for the corresponding detection
+
+If you examine the generated allF.txt and allR.txt files you will find in the first three lines:
+	allF:
+60,0,686.67,186.67,546.67,1333.3,1
+60,1,746.67,225,513.78,1253.1,1
+60,2,740,186.67,546.67,1333.3,1
+	allR:
+60,0,686.67,186.67,546.67,1333.3,2,15,46,32,35,5,999,36,27,17,38,44,47,24,33,1,49,31,20,4,30,9,29,21,28,25,26,22,39,40,63,43,23,19,11,7,41,85,64,42,48,69,12,62,56,14,83,71,68,73,75,82,52,16,8,34,13,58,61,67,53,60,65,70,37,10,72,84,74,80,45,76,79,59,50,66,77
+60,1,746.67,225,513.78,1253.1,2,46,32,15,5,35,999,36,47,17,44,27,24,38,1,33,49,20,30,31,4,29,9,39,28,25,21,22,26,40,63,43,48,7,41,85,19,23,11,64,62,42,12,69,83,56,14,71,75,82,68,16,61,52,8,58,34,67,73,13,60,10,53,65,70,84,37,45,72,74,80,76,79,50,66,59,77
+60,2,740,186.67,546.67,1333.3,15,2,46,35,36,32,5,999,44,17,38,27,31,47,33,1,24,29,49,30,9,4,39,63,20,22,28,26,7,21,19,64,25,42,62,40,69,68,12,41,56,85,14,11,43,16,53,23,71,67,52,48,73,8,13,75,58,61,34,83,82,65,70,60,84,37,45,72,10,74,76,80,59,77,66,79,50
+	
+ 
+#########################################
+=== To test your classification code: ===
+#########################################
+
+0) If 
+
+1) ADD YOUR CODE TO "hda_code" folder
+Anywhere of your liking, our scripts are in the "hda_code\detection_reid_pipeline\" folder
+
+2) SET global variables to desired values: 
+You may set the global variables in the sub script "setUserDefinedExperimentParameters.m", or simply use the default values, which were used in the example above (although you must always at least change the handle which corresponds to your re-identification classifier).
+
+For a full description of each global variable see the comments in "declareGlobalVariables.m".
+
+The most important are:
+
+SET "experimentVersion" variable to an unique number or name that describes what experiment you will run. In "setUserDefinedExperimentParameters.m" "experimentVersion" is checked to determine the rest of the global variables values.
+i.e.,		 : experimentVersion = '_myTest001';
+default value: experimentVersion = 'DIRECT';
+
+SET "reIdentifierHandle" variable to your re-identification classifier function matlab name
+i.e.		 : reIdentifierHandle = @yourClassifierName;
+default value: reIdentifierHandle = @BhattacharryaNNReId;
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~ To be able to use this structure your classification code will need to conform to: 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+EstimatedIDListedByRank = yourClassifierName(TestSampleFeatureVector, trainingDataStructure)
+Where 
+ - "TestSampleFeatureVector" is one test sample feature vector
+ - trainingDataStructure is a structure with all data conserning the training samples (see createTrainStructure.m for more details)
+ - EstimatedIDListedByRank is a list of numbers representing the ranked list of estimated person IDs (first rank is first)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~ And your feature extraction code will need to conform to: 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+TestSampleFeatureVector = featureExtractionHandle(TestSampleImage, TestSampleBodyPartMasks)
+Where
+ - TestSampleImage is a cropped image, padded to the size of the body-part masks
+ - TestSampleBodyPartMasks is a cell-array, of 4 binary image masks, each a mask of one body part (head / torso / thighs / fore-legs)
+ - "TestSampleFeatureVector" is this test sample feature vector
+ 
+See "reIdentificationWrapper.m" for more information in the comments.
