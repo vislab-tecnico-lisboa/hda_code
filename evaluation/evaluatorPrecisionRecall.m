@@ -24,7 +24,7 @@ function evaluatorPrecisionRecall()
         nTrainPeds = length(unique_trainSpid);
 
         % Create test samples structure
-        reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d/ReIdsAndGts', testCamera) reIdentifierName];
+        reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d/ReIdsAndGT_', testCamera) reIdentifierName];
         reIdsAndGtMat = dlmread([reIdsAndGtDirectory '/allG.txt']);        
         clear testSamplesStructure,
         for i=1:size(reIdsAndGtMat,1)

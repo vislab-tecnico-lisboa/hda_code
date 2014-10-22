@@ -15,7 +15,7 @@ function evaluatorCMC()
         % No need anymore, using trainCameras list to create the structure
         % trainDataStructNoTestCamera = trainingDataStructure([trainingDataStructure.camera] ~= testCamera);
         
-        reIdsAndGtDirectory = [experimentDataDirectory sprintf('/camera%02d',testCamera) '/ReIdsAndGts' reIdentifierName ];
+        reIdsAndGtDirectory = [experimentDataDirectory sprintf('/camera%02d',testCamera) '/ReIdsAndGT_' reIdentifierName ];
 
         reIdsAndGtMat = dlmread([reIdsAndGtDirectory '/allG.txt']);
         assert(min(reIdsAndGtMat(:,1)==testCamera + reIdsAndGtMat(:,1)==0),['This allG has samples not from this camera (' int2str(testCamera) ')?? Wtf?'])
