@@ -1,38 +1,31 @@
 ######################
-##Error description:##
+### Error description:
 ######################
+```
 Error using dateformverify (line 18)
 DATESTR failed converting date number to date vector.  Date
 number out of range.
 
-Error in datestr (line 195)
-S = dateformverify(dtnumber, dateformstr, islocal);
-
-Error in waitbar>updatewaitbar (line 158)
-        r_mes = datestr(sec_remain/86400,'HH:MM:SS');
-
-Error in waitbar>buildwaitbar (line 125)
-    updatewaitbar(h,X,message);              % Updates
-    waitbar if X~=0
-
 Error in waitbar (line 53)
     if  isempty(h) || ~ishandle(h(1)); h =
     buildwaitbar(X,message);	
-	
+```
 ==============	
-== Solution ==	
+#### Solution:
 ==============	
 Just run the script again, seems to be some time-out issue in matlab, not sure what.
 
 ######################
 ##Error description:##
 ######################
+```
 Error using drawnow
 UIJ_AreThereWindowShowsPending - timeout waiting for window
 to show up
 
 Error in cprintf (line 199)
   drawnow;
+```
 
 ==============	
 == Solution ==	
