@@ -1,35 +1,77 @@
-function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDirectory, experimentDataDirectory, recomputeAllCachedInformation)
+function FPClassCreator()
+%
+% Makes a list of all false positives in the training cameras and stores it
+% under the experiment folder inside a FPClass folder (i.e.,
+% HDA_Dataset/hda_experiment_data/DetectorName_ExperimentName/FPClass )
+%
+% If this list (named allFP.txt and allUniqueFP.txt) already exists for all
+% cameras in the general detections folder (i.e., HDA_Dataset/hda_detections/AcfInria/FPClass)
+% then create allFP.txt and allUniqueFP.txt with the false positives of
+% only the specified training camera by extracting from those general files
+% the lines with respect to only the specified training cameras.
+%
+% This filtering and storing of the list in the experiment folder is
+% somewhat redundant at the moment because in createTrainStructure.m it is
+% loading the false positives from the general detections folder, and
+% filtering there to keep only the ones relative to the specified training
+% cameras.
+%
+% The image loading or cropping-on-the-fly plus the feature extraction is
+% done in createTrainStructure.m
 
-    createImages = 0;
+declareGlobalVariables,
+
+FPclassDirectory         = [experimentDataDirectory '/FPClass'];
+if ~exist(FPclassDirectory,'dir'), mkdir(FPclassDirectory); end;
+
+if(recomputeAllCachedInformation)
+    warning('off','MATLAB:DELETE:FileNotFound')
+    delete([FPclassDirectory '/info.txt']);
+    delete([FPclassDirectory '/allFP.txt']);
+    delete([FPclassDirectory '/allUniqueFP.txt']);
+    warning('on','MATLAB:DELETE:FileNotFound')
+end
+if exist([FPclassDirectory '/allUniqueFP.txt'],'file')
+    cprintf('blue',['allUniqueFP.txt already exists at ' FPclassDirectory '\n']),
+    return,
+end
+
+fid = fopen([FPclassDirectory '/info.txt'],'w');
+fprintf(fid,'List of False Positive detections in the training cameras to create a FP class in the RE-ID classifier.\n');
+fprintf(fid,'Format: \n');
+fprintf(fid,'camera#, frame#, x, y, w, h. \n');
+fclose(fid);
+
+%% Compute all detections with zero overlap with GT
+allFPs_folder = [hdaRootDirectory '/hda_detections/' detectorName '/FPClass'];
+allFPs_allCameras_txt  = [allFPs_folder '/allUniqueFP.txt'];
+allUniqueFPs_allCameras_txt = [allFPs_folder '/allUniqueFP.txt'];
+if exist(allUniqueFPs_allCameras_txt,'file') && exist(allFPs_allCameras_txt,'file')
+    % copy from pre-computed files in the detectors folder
+    allFPs_allCameras = dlmread(allFPs_allCameras_txt);
+    allUniqueFPs_allCameras = dlmread(allUniqueFPs_allCameras_txt);
     
-    FPclassDirectory         = [experimentDataDirectory '/FPClass'];
-    if ~exist(FPclassDirectory,'dir'), mkdir(FPclassDirectory); end;
-    
-    if(recomputeAllCachedInformation)
-        delete([FPclassDirectory '/info.txt']);
-        delete([FPclassDirectory '/allFP.txt']);
-        delete([FPclassDirectory '/allUniqueFP.txt']);
+    % Keep only the FPs from specified training cameras
+    allFPs = [];
+    allUniqueFPs = [];
+    for trainCamera = trainCameras
+        allFPs       = [allFPs;                   allFPs_allCameras(allFPs_allCameras(:,1) == trainCamera,:)];
+        allUniqueFPs = [allUniqueFPs; allUniqueFPs_allCameras(allUniqueFPs_allCameras(:,1) == trainCamera,:)];
     end
-    if exist([FPclassDirectory '/allUniqueFP.txt'],'file')
-        cprintf('blue',['allUniqueFP.txt already exists at ' FPclassDirectory '\n']),
-        return,
-    end
+    dlmwrite([FPclassDirectory '/allFP.txt'],allFPs);
+    cprintf('*red',['Saved allFP.txt to ' FPclassDirectory '\n'])
+    dlmwrite([FPclassDirectory '/allUniqueFP.txt'],allUniqueFPs);
+    cprintf('*red',['Saved allUniqueFP.txt to ' FPclassDirectory '\n'])
 
-    fid = fopen([FPclassDirectory '/info.txt'],'w');
-    fprintf(fid,'List of False Positive detections in the training cameras to create a FP class in the RE-ID classifier.\n');
-    fprintf(fid,'Format: \n');
-    fprintf(fid,'camera#, frame#, x, y, w, h. \n');
-    fclose(fid);
-
-    %% Compute all detections with zero overlap with GT
+else
     MatToSave = [];
     for trainCamera = trainCameras
         fprintf('FPClassCreator: Working on camera: %d\n',trainCamera);
         
         localDetectionsDirectory = [thisDetectorDetectionsDirectory sprintf('/camera%02d',trainCamera) '/Detections'];
-
+        
         %Read GT file (VBB)
-        GTName = [hdaRootDirectory '/hda_annotations' sprintf('/cam%02d_rev1.txt',trainCamera)];
+        GTName = [hdaRootDirectory '/hda_annotations' sprintf('/cam%02d.txt',trainCamera)];
         GTMat = vbb('vbbLoadTxt',GTName);
         
         %Load all-detections matrix
@@ -38,8 +80,11 @@ function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDi
         
         %Work on one detectition file at a time
         wbr = waitbar(0, ['FPClassCreator on camera ' int2str(trainCamera) ', image 0/' int2str(nDets)]);
+        dividerWaitbar=10^(floor(log10(nDets))-1); % Limiting the access to waitbar
         for det=1:nDets
-            waitbar(det/nDets, wbr, ['FPClassCreator on camera ' int2str(trainCamera) ', image ' int2str(det) '/' int2str(nDets)]);
+            if (round(det/dividerWaitbar)==det/dividerWaitbar) % Limiting the access to waitbar
+                waitbar(det/nDets, wbr, ['FPClassCreator on camera ' int2str(trainCamera) ', image ' int2str(det) '/' int2str(nDets)]);
+            end
             dataLine = DetMat(det,:);
             frame = dataLine(2);
             %Select the GT data for this image
@@ -47,25 +92,25 @@ function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDi
                 % For camera 54 frames begin at 0 and end at 3424
                 % objLists for camera 54 has 3424 cells
                 % so wtf?
-                gt=GTMat.objLists{1,frame+1}; 
-            catch
-                warning(['FPClassCreator: warning at ' int2str(det) ' detection of camera ' int2str(trainCamera) ])
+                gt=GTMat.objLists{1,frame+1};
+            catch me
+                warning(['FPClassCreator: warning at ' int2str(det) ' detection of camera ' int2str(trainCamera) '  ' me.message])
                 continue,
             end
-
+            
             % Detections with zero overlap with ground truth annotations
             % are considered false positives to be inserted in the false
             % positive class
             isFalsePositive = 1;
             overlap =[];
-            for gtId=1:size(gt,2) 
+            for gtId=1:size(gt,2)
                 %match = 0 if overlap < threshold, 1 otherwise
                 [match, cost] = computeBbMatch( gt(1,gtId).pos, dataLine(3:6), 0);
                 overlap(gtId) = 1-cost;
-                if(match), 
-                    isFalsePositive = 0; 
-                end               
-            end    
+                if(match),
+                    isFalsePositive = 0;
+                end
+            end
             if(isFalsePositive)
                 label=999;
                 MatToSave(end+1,:) = [dataLine(1:end-1)];
@@ -77,24 +122,24 @@ function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDi
     end
     dlmwrite([FPclassDirectory '/allFP.txt'],MatToSave);
     cprintf('*red',['Saved allFP.txt to ' FPclassDirectory '\n'])
-
-
+    
+    
     %% From all FPs select only the unique ones (with different [x y w h])
     % and crop them
     uniqueFPs = [];
     allFPs = dlmread([FPclassDirectory '/allFP.txt']);
     seqFilesDirectory = [hdaRootDirectory '/hda_image_sequences_matlab'];
     for trainCamera = trainCameras
-        %%
+        
         thisCameraFPsInd = allFPs(:,1) == trainCamera;
         thisCameraFPs = allFPs(thisCameraFPsInd,:);
         numFPs = size(thisCameraFPs,1);
         
         % Retain only the unique FPs bounding boxes in the image (many FPs
-        % are repetitions, e.g., several images of the same fire extinguisher) 
+        % are repetitions, e.g., several images of the same fire extinguisher)
         uniqueThisCameraFPsTemp = thisCameraFPs;
         uniqueThisCameraFPs = [];
-        while ~isempty(uniqueThisCameraFPsTemp)        
+        while ~isempty(uniqueThisCameraFPsTemp)
             FP = uniqueThisCameraFPsTemp(1,:);
             duplicateFPsi = sum(uniqueThisCameraFPsTemp(:,3:end) == repmat(FP(3:end),size(uniqueThisCameraFPsTemp,1),1),2) == 4;
             uniqueThisCameraFPsTemp = uniqueThisCameraFPsTemp(~duplicateFPsi,:);
@@ -102,7 +147,7 @@ function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDi
         end
         
         % Crop all the unique FPs
-        if createImages
+        if offlineCrop_and_not_OnTheFlyFeatureExtraction
             %Set up image reading stuff
             seqName = sprintf('%s/camera%02d.seq',seqFilesDirectory, trainCamera); %MATTEO TODO CHANGE CAM TO CAMERA
             seqReader = seqIo( seqName, 'reader'); % Open the input image sequence
@@ -158,7 +203,23 @@ function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDi
                 subImage=padarray(subImage,[bottomPad,rightPad],'replicate','post');
                 
                 imageName = [FPclassDirectory sprintf('/FP%06d.png',size(uniqueFPs,1)+FPi)];
-                imwrite(subImage,imageName);
+                try
+                    imwrite(subImage,imageName);
+                catch me
+                    % This is randomply giving this error on plinio's PC:
+                    %??? Error using ==> png
+                    %Could not open file.
+                    %
+                    %Error in ==> writepng at 429
+                    %png('write', data, map, filename, colortype, bitdepth, ...
+                    %
+                    %Error in ==> imwrite at 477
+                    %        feval(fmt_s.write, data, map, filename, paramPairs{:});
+                    warning([me.message])
+                    display(['         when trying to save image ' imageName '... '])
+                    display(['         Trying again.'])
+                    imwrite(subImage,imageName);
+                end
                 
             end
         end
@@ -178,12 +239,8 @@ function FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDi
     end
     dlmwrite([FPclassDirectory '/allUniqueFP.txt'],uniqueFPs);
     cprintf('*red',['Saved allUniqueFP.txt to ' FPclassDirectory '\n'])
+end
 
-%     ALREADY DONE IN createTrainStructure
-%     % Create feature matrix from the feature matrix of all unique FPs of all cameras 
-%     falsePositiveClassDirectory =  hda_detections\AcfInria\FPClass
-%     allFPfeatures = load([falsePositiveClassDirectory '/featHSV(4 Parts)[10,10,10]eq.mat'])
-    
 return
 
 %% Debug: inspect all FPs
@@ -195,11 +252,11 @@ return
 % %Set up image reading stuff
 % seqName = sprintf('%s/camera%02d.seq',seqFilesDirectory, trainCamera); %MATTEO TODO CHANGE CAM TO CAMERA
 % seqReader = seqIo( seqName, 'reader'); % Open the input image sequence
-% 
+%
 % thisCameraFPsInd = allFPs(:,1) == trainCamera;
 % thisCameraFPs = allFPs(thisCameraFPsInd,:);
 % numFPs = size(thisCameraFPs,1);
-% 
+%
 % figure('name', ['Camera ' int2str(trainCamera)]),
 % for deti=649:size(DetMat,1)
 %     det = DetMat(deti,:);
@@ -213,7 +270,7 @@ return
 %     title(['Frame ' int2str(frame)])
 %     waitforbuttonpress,
 % end
-% 
+%
 % % Show all FPs
 % for FPi=1:size(thisCameraFPs,1)
 %     FP = thisCameraFPs(FPi,3:end);
@@ -258,33 +315,33 @@ return
 %     hold off,
 %     waitforbuttonpress,
 % end
-                
+
 function [match cost] = computeBbMatch( r1, r2, threshold)
 % r = [u0, v0, width, height]
 % threshold should be a value between 0 and 1, typically 0.5
 
-      %Do r1 and r2 intersect? Check if you can define a rectangle which is the intersection of the two.
-      u0Int = max( r1(2), r2(2) ); %rightmost left edge
-      v0Int = max( r1(1), r2(1) ); %lower top edge
-      u1Int = min( r1(2) + r1(4), r2(2) +r2(4) ); %leftmost right edge
-      v1Int = min( r1(1) + r1(3), r2(1) +r2(3) ); %upper bottom edge
-      
-      if( ( u0Int < u1Int ) && ( v0Int < v1Int ) ) %YES, intersection
-        overlapArea = (u1Int - u0Int) * (v1Int - v0Int);
-        unionArea = r1(3)*r1(4) + r2(3)*r2(4) - overlapArea;
-        if( (overlapArea/unionArea) >= threshold)
-          match = true;
-          cost  = (unionArea-overlapArea)/unionArea; %Encodes how bad the match is. NonOverlap/Union.
-        else
-          match = false;
-          cost  = inf;
-        end    
-      else
-        overlapArea = 0;
+%Do r1 and r2 intersect? Check if you can define a rectangle which is the intersection of the two.
+u0Int = max( r1(2), r2(2) ); %rightmost left edge
+v0Int = max( r1(1), r2(1) ); %lower top edge
+u1Int = min( r1(2) + r1(4), r2(2) +r2(4) ); %leftmost right edge
+v1Int = min( r1(1) + r1(3), r2(1) +r2(3) ); %upper bottom edge
+
+if( ( u0Int < u1Int ) && ( v0Int < v1Int ) ) %YES, intersection
+    overlapArea = (u1Int - u0Int) * (v1Int - v0Int);
+    unionArea = r1(3)*r1(4) + r2(3)*r2(4) - overlapArea;
+    if( (overlapArea/unionArea) >= threshold)
+        match = true;
+        cost  = (unionArea-overlapArea)/unionArea; %Encodes how bad the match is. NonOverlap/Union.
+    else
         match = false;
         cost  = inf;
-      end  
-      
+    end
+else
+    overlapArea = 0;
+    match = false;
+    cost  = inf;
+end
+
 return
 
 

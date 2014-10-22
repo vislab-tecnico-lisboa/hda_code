@@ -12,6 +12,7 @@ function writeExpermentParametersTxt()
     fprintf(fid,['Filter detections by overlap? (YES/NO)      : ' int2str(useMutualOverlapFilter) '\n']);
     fprintf(fid,['Maximum overlap beween detections threshold : ' num2str(maximumOcclusionRate) '\n']);
     fprintf(fid,['Re-Identifier name                          : ' reIdentifierName '\n']);    
+    fprintf(fid,['Feature extraction name                     : ' featureExtractionName '\n']);    
 
     fclose(fid);
 
@@ -24,4 +25,5 @@ function writeExpermentParametersTxt()
     cprintf('black',['Filter detections by overlap? (YES/NO)      : ' int2str(useMutualOverlapFilter) '\n']);
     cprintf('black',['Maximum overlap beween detections threshold : ' num2str(maximumOcclusionRate) '\n']);
     cprintf('black',['Re-Identifier name                          : ' reIdentifierName '\n']);    
+    cprintf('black',['Feature extraction name                     : ' featureExtractionName '\n']);    
     cprintf('*black',['================================================================\n']);

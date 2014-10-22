@@ -1,112 +1,81 @@
 %% Full pipe-line script
 %
-% This script implements the full pipe-line described in [1], First a set
-% of detections are processed to crop each detection from the respective
-% video images, producing cropped images and detection files containing .
+% This script implements the full pipe-line described in [1]. 
+% 
+% This script runs an example re-identification algorithm on the HDA
+% dataset and displays evaluation in the form of a CMC and a
+% Precision-Recall curve.  
 %
-%
-% [1] Matteo Taiana, Dario Figueira, Athira Nambiar, Jacinto Nascimento,
-% Alexandre Bernardino, "Towards Fully Automated Person Re-Identification",
-% at VISAPP 2014  
-
+% [1] D. Figueira, M. Taiana, A. Nambiar, J. Nascimento and A. Bernardino,
+% "The HDA+ data set for research on fully automated re-identification
+% systems.", VS-RE-ID Workshop at ECCV 2014.  
+  
 clearvars
 declareGlobalVariables,
 
 %% Computer specific dataset directory
-%   Edit below and fill in the "hdaRootDirectory" variable with the location
-% of the 'HDA_Dataset' folder, and fill in the 'addpath(genpath( ))' with
-% the location of the hda_code folder (which you may place outside the
-% HDA_Dataset folder if you wish to place only it inside a dropbox folder, e.g.)
+% Edit the sub-script "Computer_Specific_Dataset_Directory.m", and fill in:
+%   - "hdaRootDirectory" variable with the location of the 'HDA_Dataset'
+% folder, 
+%   -'addpath(genpath( ... ))' with the location of the hda_code folder (which
+%   need not be inside the HDA_Dataset folder) 
 
-% Code for allowing several computers to run the same script
-[~,systemName] = system('hostname');
-if strcmp(systemName(1:end-1),'Dario-Laptop')
-    hdaRootDirectory ='C:/Users/Dario/Desktop/WorkNoSync/HDA_Dataset';
-    addpath(genpath('C:/Users/Dario/Dropbox/Work/hda_code'));
-    
-elseif strcmp(systemName(1:end-1),'vislab7')
-    hdaRootDirectory ='/home/dario/Desktop/WorkNoSync/HDA_Dataset';
-    addpath(genpath('/home/dario/Desktop/Dropbox/Work/hda_code'));
-        
-elseif strcmp(systemName(1:end-1),'NetVis-PC') % Asus Eee PC do Vislab
-    hdaRootDirectory ='C:/Users/Dario/Dropbox/Work/HDA_Dataset';
-    addpath(genpath('C:/Users/Dario/Dropbox/Work/hda_code'));
-        
-elseif strcmp(systemName(1:end-1),'rocoto')
-    hdaRootDirectory ='~/PhD/MyCode/ReId/HdaRoot';
-    addpath(genpath(['~/PhD/MyCode/ReId/Svn/']));
-end
-
-% hdaRootDirectory = ...;
-% addpath(genpath( ... ));
+Computer_Specific_Dataset_Directory,
 
 %% User defined parameters
 %   Open the 'setUserDefinedExperimentParameters.m' to create an experiment
 % name and set the desired parameter values for that experiment (there is
 % already a lot of possible combinations filled in).
-%   Then fill in the 'experimentVersion' variable with the experiment name
+%   Then fill in the 'experimentVersion' variable below with the experiment name
 % that indicates the desired experiment to run.
+%
 %   If 'recomputeAllCachedInformation' is set to 1, all the files that are
-% created during the selected 'experimentVersion' are deleted when runnin
-% the respective parts of the code. If 'recomputeAllCachedInformation' is
-% set to 0, subsequent runnings of the code are very fast, since all the
-% cached information is loaded instead of re-created.
+% created during the selected 'experimentVersion' are deleted. 
+% If 'recomputeAllCachedInformation' is set to 0, subsequent runnings of
+% the code are very fast, since all the cached information is loaded
+% instead of re-created. 
+%
+%   If 'offlineCrop_and_not_OnTheFlyFeatureExtraction' is set to 1, crop.m
+% generates the cropped images corresponding to the detections and stores
+% them in the FilteredCrops folder for the re-identification classifier to use. 
+% If set to 0, no images are stored and the re-identification wrapper
+% extracts the detection part of the whole frame images on-the-fly (as
+% exemplified in reIdentificationWrapper.m)     
 
-recomputeAllCachedInformation = 0;
-offlineCrop_and_not_OnTheFlyFeatureExtraction = 1;
-experimentVersion = 'FPoffOCCoff_cam56';
+recomputeAllCachedInformation = 1;
+offlineCrop_and_not_OnTheFlyFeatureExtraction = 0;
+experimentVersion = '001';
+
 setUserDefinedExperimentParameters(experimentVersion); 
 
-if ~isempty(intersect(trainCameras,testCameras))
-    warning(['Training set and testing set cameras overlap, are you sure you want to do this?' ...
-        ' (cameras ' int2str(intersect(trainCameras,testCameras)) ')'])
-end
-
-%% Verify the existence of the detections
-detectionsDirectory = [hdaRootDirectory '/hda_detections'];
-thisDetectorDetectionsDirectory = [detectionsDirectory '/' detectorName];
-if(~exist(detectionsDirectory,'dir') || ~exist(thisDetectorDetectionsDirectory,'dir'))
-    error(['The directory containing the detections: "' thisDetectorDetectionsDirectory '" does not exist.' ... 
-        ' 1) Have you set the ''hdaRootDirectory'' variable?' ... 
-        ' 2) Have you put the detections of ''' detectorName ''' detector into the "hda_detections" folder?' ...
-        ' Exiting..'])
-end
-
-%% Create experiment_data folders
-allExperimentDataDirectory = [hdaRootDirectory '/hda_experiment_data'];
-if ~exist(allExperimentDataDirectory,'dir'), mkdir(allExperimentDataDirectory), end,
-% Create specific experiment folder
-experimentDataDirectory = [allExperimentDataDirectory '/' detectorName experimentVersion ];
-if ~exist(experimentDataDirectory,'dir'), mkdir(experimentDataDirectory), end,
-% Create test camera folders
-for camId = testCameras
-    cameraDirectory = [experimentDataDirectory '/camera' int2str(camId) '/'];
-    if ~exist(cameraDirectory,'dir'), mkdir(cameraDirectory), end,
-end
-% Write down experiment parameters in text file
-writeExpermentParametersTxt(),
+%% Verify the existence of the detections and Create experiment_data folders
+% and other small pre-computations
+Verify_existance_of_detections_and_create_experiment_folders,
 
 %% Pipe-line computation proper
 
-% If you wish to ignore detections that would be associated to the 'crowd'
-% annotation, then uncomment the following line.
-% createallDetections_plusGT_and_NoCrowds(testCameras, hdaRootDirectory, thisDetectorDetectionsDirectory, recomputeAllCachedInformation),
-
 if useFalsePositiveClass
-    FPClassCreator(trainCameras, hdaRootDirectory, thisDetectorDetectionsDirectory, experimentDataDirectory, recomputeAllCachedInformation, offlineCrop_and_not_OnTheFlyFeatureExtraction)
+    % Crops detections that don't match any Ground-Truth Bounding Box in
+    % all the train cameras.
+    FPClassCreator(),
 end
 
 % Crops detections from video images of test camera
 crop();
 
+% Filters out the occluded pedestrians
 filterOccluded();
 
-reIdentifierHandle();
+% Re-identification proper
+reIdentificationWrapper();
 
-gtAndDetMatcher();
+% Matches the re-identified detections with the Ground Truth for evaluation
+GTandDetMatcher();
 
+% Evaluates and plots a CMC curve
 evaluatorCMC();
 
+% Evaluates and plots a Precision-Recall curve
 evaluatorPrecisionRecall();
 
 

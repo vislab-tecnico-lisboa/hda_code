@@ -39,7 +39,13 @@ if thisRatio > targetRatio
 elseif thisRatio < targetRatio
     % too FAT, padding height    
     pad = wid * targetRatio - hei;
-    image = padarray(image,[round(pad/2) 0 0],'replicate','both');
+    image = padarray(image,[round(pad/2) 0 0],'replicate','both'); 
+    % image = padarray(image,[round(pad) 0 0],'replicate','post'); 
+    % We'd like to assume here that bounding boxes are cropped by the lower image boundary,
+    % it's the most common case, but given the position of the bounding box
+    % this could be improved  
+    % In any case, the masks would have to be recomputed if we make this
+    % change
 end
 
 paddedImage = image;
