@@ -1,10 +1,7 @@
 %% Run this file to launch the GUI to visualize the videos and annotations
-cd vbbLabeler
-addpath(genpath('../toolbox'));
-
+addpath(genpath('toolbox'));
+addpath(genpath('vbbLabeler'));
 vbbLabeler,
-
-cd ..
 
 % 1) Open the corresponding *.SEQ file for visualization of the corresponding
 % video
