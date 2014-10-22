@@ -7,7 +7,7 @@ function evaluatorCMC()
 
 	declareGlobalVariables,
 
-    trainingDataStructure = createTrainStructure(hdaRootDirectory, trainCameras, useFalsePositiveClass, thisDetectorDetectionsDirectory);    
+    trainingDataStructure = createTrainStructure(0);    
     unique_trainStruct_Pid = unique([trainingDataStructure.personId]);
     
     for testCamera = testCameras

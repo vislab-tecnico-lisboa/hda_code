@@ -1,4 +1,4 @@
-function gtAndDetMatcher()
+function GTandDetMatcher()
 %GTANDDETMATCHER associates GT labels to ReId BB's.
 % Reads GT labels, reads ReId results, computes the overlap between each
 % (GT BB, ReId BB) in a frame, and associates each ReId BB to the GT BB
@@ -12,15 +12,15 @@ function gtAndDetMatcher()
     for testCamera = testCameras
         fprintf('gtAndDetMatcher: Working on camera: %d\n',testCamera);
         
-        reIdsDirectory         = [experimentDataDirectory sprintf('/camera%02d/ReIds',       testCamera) reIdentifierName];
-        reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d/ReIdsAndGts', testCamera) reIdentifierName];
+        reIdsDirectory         = [experimentDataDirectory sprintf('/camera%02d',       testCamera) '/ReIds_' reIdentifierName];
+        reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d', testCamera) '/ReIdsAndGT_' reIdentifierName];
          
         if ~exist(reIdsAndGtDirectory,'dir'), mkdir(reIdsAndGtDirectory); end;
         if(recomputeAllCachedInformation)
+            warning('off','MATLAB:DELETE:FileNotFound')
             delete([reIdsAndGtDirectory '/info.txt']);
             delete([reIdsAndGtDirectory '/allG.txt']);
-            % Delete the old G*.txt files now that we only create one file: allG.txt 
-            delete([reIdsAndGtDirectory '/G*.txt']);
+            warning('on','MATLAB:DELETE:FileNotFound')
         end
         if exist([reIdsAndGtDirectory '/allG.txt'],'file')
             cprintf('blue',['allG.txt already exists at ' reIdsAndGtDirectory '\n']),
@@ -33,18 +33,21 @@ function gtAndDetMatcher()
         fclose(fid);
 
         %Read GT file (VBB)
-        GTName = [hdaRootDirectory '/hda_annotations' sprintf('/cam%02d_rev1.txt',testCamera)];
+        GTName = [hdaRootDirectory '/hda_annotations' sprintf('/cam%02d.txt',testCamera)];
         GTMat = vbb('vbbLoadTxt',GTName);
         
         reIdsMat = dlmread([reIdsDirectory '/allR.txt']);
         nReIds=size(reIdsMat,1);
         %Work on one detectition file at a time
         wbr = waitbar(0, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image 0/' int2str(nReIds)]);
+        dividerWaitbar=10^(floor(log10(nReIds))-1); % Limiting the access to waitbar
         % reIdsMat has         : camera#, frame#, x0, y0, width, height, ranked-list 
         % allG supposed to have: camera#, frame#, realId, ranked-list
         allGMatToSave = zeros(nReIds,size(reIdsMat,2)-3);
         for image=1:nReIds
-            waitbar(image/nReIds, wbr, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image ' int2str(image) '/' int2str(nReIds)]);
+            if (round(image/dividerWaitbar)==image/dividerWaitbar) % Limiting the access to waitbar
+                waitbar(image/nReIds, wbr, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image ' int2str(image) '/' int2str(nReIds)]);
+            end
             dataLine = reIdsMat(image,:);
             if min(dataLine==zeros(size(dataLine))) % if line is "empty" (all zeros) 
                 continue,

@@ -2,18 +2,26 @@ function evaluatorPrecisionRecall()
 
 	declareGlobalVariables,
 	
-    trainingDataStructure = createTrainStructure(hdaRootDirectory,trainCameras,useFalsePositiveClass,thisDetectorDetectionsDirectory);
+    loadImages = 0; % No need to load images, just using the training structure to figure out the training pedestrian IDs
+    trainingDataStructure = createTrainStructure(loadImages); 
 
     for testCamera = testCameras
         
-        imagePath = [hdaRootDirectory '/hda_image_sequences_jpeg/camera' int2str(testCamera)];
-        imageNames = dir([imagePath '/*.jpeg']);
+        % Checking the video length in frames
+        seqFilesDirectory = [hdaRootDirectory '/hda_image_sequences_matlab'];
+        %Set up image reading stuff
+        seqName = sprintf('%s/camera%02d.seq',seqFilesDirectory, testCamera); 
+        seqReader = seqIo( seqName, 'reader'); % Open the input image sequence
+        info = seqReader.getinfo();
+        TotalFrames = info.numFrames;
+        
+        % imagePath = [hdaRootDirectory '/hda_image_sequences_jpeg/camera' int2str(testCamera)];
+        % imageNames = dir([imagePath '/*.jpeg']);
+        % TotalFrames = length(imageNames);
         
         trainDataStructNoTestCamera = trainingDataStructure([trainingDataStructure.camera] ~= testCamera);
         unique_trainSpid = unique([trainDataStructNoTestCamera.personId]);
         nTrainPeds = length(unique_trainSpid);
-
-        TotalFrames = length(imageNames);
 
         % Create test samples structure
         reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d/ReIdsAndGts', testCamera) reIdentifierName];
@@ -33,15 +41,17 @@ function evaluatorPrecisionRecall()
         
         PrecRecFile = [experimentDataDirectory sprintf('/camera%02d', testCamera) '/PrecRec_R1to' int2str(nTrainPeds) '.mat'];                
         if recomputeAllCachedInformation
+            warning('off','MATLAB:DELETE:FileNotFound')
             delete(PrecRecFile)
+            warning('on','MATLAB:DELETE:FileNotFound')
         end
         if exist(PrecRecFile,'file')
             load(PrecRecFile,'Precision_overAllFrames','Recall_overAllFrames'),
             cprintf('*blue',['Loaded file with Precision and Recall from ' PrecRecFile '\n'])
         else                
-            wbr = waitbar(0, ['windowBasedClassifier on camera ' int2str(testCamera)]);
+            wbr = waitbar(0, ['Precision/Recall on camera ' int2str(testCamera)]);
             for R=1:nTrainPeds
-                waitbar(R/nTrainPeds, wbr, ['windowBasedClassifier on camera ' int2str(testCamera) ', Rank ' int2str(R) '/' int2str(nTrainPeds)]);
+                waitbar(R/nTrainPeds, wbr, ['Precision/Recall on camera ' int2str(testCamera) ', Rank ' int2str(R) '/' int2str(nTrainPeds)]);
 
                 % Create framesShown matrix, which contains one line per pedestrian,
                 % the lenght of the video, with 1 in the frames where the ReId classifier
@@ -110,15 +120,15 @@ function evaluatorPrecisionRecall()
 
         % Make Fig. 7 of HDA+ paper, only plot Rank 1 points, in a single
         % figure
-        plotPRcurve(Recall_overAllFrames(1), Precision_overAllFrames(1), detectorName, reIdentifierName, useMutualOverlapFilter, useFalsePositiveClass);
+        plotPRcurve(Recall_overAllFrames(1), Precision_overAllFrames(1), detectorName, reIdentifierName, useMutualOverlapFilter, useFalsePositiveClass, testCamera);
 
         % Plot a Precision/Recall curve for all ranks
-        plotPRcurve(Recall_overAllFrames, Precision_overAllFrames, detectorName, reIdentifierName, useMutualOverlapFilter, useFalsePositiveClass);
+        plotPRcurve(Recall_overAllFrames, Precision_overAllFrames, detectorName, reIdentifierName, useMutualOverlapFilter, useFalsePositiveClass, testCamera);
     end
 
 return,
 
-function plotPRcurve(Precision_overAllFrames, Recall_overAllFrames, detectorName, reIdentifierName, useMutualOverlapFilter, useFalsePositiveClass)
+function plotPRcurve(Precision_overAllFrames, Recall_overAllFrames, detectorName, reIdentifierName, useMutualOverlapFilter, useFalsePositiveClass, testCamera)
 
     markersize = 20;
     linecolor = 'k';
@@ -160,7 +170,8 @@ function plotPRcurve(Precision_overAllFrames, Recall_overAllFrames, detectorName
         linestyle= '-.';
         legendStr = ['FP ON, OCC ON'];
     end
-    
+    legendStr = [legendStr ' cam' int2str(testCamera)];
+
     if length(Precision_overAllFrames) == 1
         linestyle = '';
         figure(839755), hold on,
