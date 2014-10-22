@@ -29,10 +29,12 @@ elseif strcmp(systemName(1:end-1),'vislab7') % My desktop
     hdaRootDirectory ='/home/dario/Desktop/Dropbox/Work/HDA_Dataset';
     % not doing genpath(), but adding each folder individually because of
     % the .sync folder from BTSync
-    addpath('/home/dario/Desktop/Dropbox/Work/hda_code/detection_reid_pipeline');
-    addpath('/home/dario/Desktop/Dropbox/Work/hda_code/evaluation');
-    addpath(genpath('/home/dario/Desktop/Dropbox/Work/hda_code/visualization'));
-        
+%     addpath('/home/dario/Desktop/Dropbox/Work/hda_code/detection_reid_pipeline');
+%     addpath('/home/dario/Desktop/Dropbox/Work/hda_code/evaluation');
+%     addpath(genpath('/home/dario/Desktop/Dropbox/Work/hda_code/visualization'));
+    addpath(genpath('/home/dario/Desktop/Dropbox/Work/HDA_Dataset/hda_code'));
+
+
 elseif strcmp(systemName(1:end-1),'NetVis-PC') % Asus Eee PC do Vislab
     
     hdaRootDirectory ='C:/Users/Dario/Dropbox/Work/HDA_Dataset';
