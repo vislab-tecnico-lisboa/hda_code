@@ -12,11 +12,10 @@ Error in waitbar (line 53)
 ```
 ==============	
 #### Solution:
-==============	
 Just run the script again, seems to be some time-out issue in matlab, not sure what.
 
 ######################
-##Error description:##
+### Error description:
 ######################
 ```
 Error using drawnow
@@ -28,13 +27,13 @@ Error in cprintf (line 199)
 ```
 
 ==============	
-== Solution ==	
-==============	
+#### Solution:
 Just close all matlab figures and run the script again, seems to be some hang/time-out issue in matlab, not sure what.
 
 ######################
-##Error description:##
+### Error description:
 ######################
+```
 ??? Error using ==> dateformverify at 18
 DATESTR failed converting date number to date vector.  Date number out of range.
 
@@ -49,30 +48,32 @@ Error in ==> waitbar>buildwaitbar at 125
 
 Error in ==> waitbar at 53
     if  isempty(h) || ~ishandle(h(1)); h = buildwaitbar(X,message);
+```
 	
 ==============	
-== Solution ==	
-==============	
+#### Solution:
 Just run the script again, seems to be some time-out issue in matlab, not sure what.
 
-########################
-###Error description:###
-########################
+######################
+### Error description:
+######################
+```
 ??? Error using ==> copyfile
 Access is denied.
 
 Error in ==> createallDetections_plusGT_and_NoCrowds at 156
         copyfile([thisExpDetectionsDir '/allDetections_noCrowds.txt'],[thisExpDetectionsDir
         '/allD.txt'])
+```
 
 ==============	
-== Solution ==	
-==============	
+#### Solution:
 Just run the script again
 
-########################
-###Error description:###
-########################
+######################
+### Error description:
+######################
+```
 ??? Index exceeds matrix dimensions.
 
 Error in ==> crop at 84
@@ -80,8 +81,8 @@ Error in ==> crop at 84
 
 Error in ==> fullPipeLineScript at 64
 crop();
+```
 
 ==============	
-== Solution ==	
-==============	
+#### Solution:
 Check that the corresponding *.seq file was correctly downloaded, and/or download it again.
