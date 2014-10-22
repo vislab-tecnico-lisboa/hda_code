@@ -15,11 +15,11 @@ To download this dataset, contact (alex at isr ist utl pt)
  4. Select the appropriate *.TXT file from the folder “hda_annotations"
  5. On the "VBB Labeler" window click the Play button in the lower-left part of the window.
 
-* To see a running example of a sample re-identification algorithm plus the evaluation code,
+* To see a running example of a sample re-identification algorithm plus the evaluation code, do the following:
 
- 1. open `HDA_Dataset\hda_code\detection_reid_pipeline\ Computer_Specific_Dataset_Directory.m`,
- 2. set the `hdaRootDirectory` variable,
- 3. add to the Matlab path the hda_code folder (fill in the `addpath(genpath( ... ))` ),,
+ 1. **Open** `HDA_Dataset\hda_code\detection_reid_pipeline\ Computer_Specific_Dataset_Directory.m`,
+ 2. Set the `hdaRootDirectory` variable,
+ 3. Add to the Matlab path the hda_code folder (fill in the `addpath(genpath( ... ))` ),,
  4. and then run the MATlab script `HDA_Dataset\hda_code\detection_reid_pipeline\ fullPipeLineScript.m` 
 (more information in [hda_code/GettingStarted.txt](https://github.com/vislab-tecnico-lisboa/hda_code/blob/master/GettingStarted.txt))
 
