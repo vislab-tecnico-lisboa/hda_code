@@ -62,9 +62,9 @@ Error in ==> waitbar at 53
 ==============	
 Just run the script again, seems to be some time-out issue in matlab, not sure what.
 
-######################
-##Error description:##
-######################
+########################
+###Error description:###
+########################
 ??? Error using ==> copyfile
 Access is denied.
 
@@ -76,3 +76,19 @@ Error in ==> createallDetections_plusGT_and_NoCrowds at 156
 == Solution ==	
 ==============	
 Just run the script again
+
+########################
+###Error description:###
+########################
+??? Index exceeds matrix dimensions.
+
+Error in ==> crop at 84
+    seqReader = seqIo( seqName, 'reader'); % Open the input image sequence
+
+Error in ==> fullPipeLineScript at 64
+crop();
+
+==============	
+== Solution ==	
+==============	
+Check that the corresponding *.seq file was correctly downloaded, and/or download it again.
