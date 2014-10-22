@@ -27,4 +27,6 @@ To download this dataset, contact (alex at isr ist utl pt)
 
 ["The HDA+ data set for research on fully automated re-identification systems." D. Figueira, M. Taiana, A. Nambiar, J. Nascimento and A. Bernardino, VS-RE-ID Workshop at ECCV 2014.](http://vislab.isr.ist.utl.pt/wp-content/uploads/2012/12/hdaplus_eccvws.pdf)
 
-~~~ Prerequisites: This dataset requires Matlab (TM).
+~~~~~~~~~~~~~~~~
+~ Prerequisites: This dataset requires Matlab (TM).
+~~~~~~~~~~~~~~~~
