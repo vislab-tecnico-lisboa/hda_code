@@ -21,8 +21,7 @@ To download this dataset, contact (alex at isr ist utl pt)
  2. set the `hdaRootDirectory` variable,
  3. add to the Matlab path the hda_code folder (fill in the `addpath(genpath( ... ))` ),,
  4. and then run the MATlab script `HDA_Dataset\hda_code\detection_reid_pipeline\ fullPipeLineScript.m` 
-
-(more information in hda_code/GettingStarted.txt)
+(more information in [hda_code/GettingStarted.txt](https://github.com/vislab-tecnico-lisboa/hda_code/blob/master/GettingStarted.txt))
 
 **If you use this dataset, please cite:**
 
