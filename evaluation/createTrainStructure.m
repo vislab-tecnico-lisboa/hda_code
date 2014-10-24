@@ -47,8 +47,10 @@ function trainingDataStructure = createTrainStructure(loadImages)
         assert(isfield(allTrainingDataStructure, 'camera'))
         assert(isfield(allTrainingDataStructure, 'frame'))
         assert(isfield(allTrainingDataStructure, 'personId'))
-        assert(isfield(allTrainingDataStructure, 'frame'))
-    else
+        assert(isfield(allTrainingDataStructure, 'image'),'SEEMS like the cached allTraining file was saved without the images :P...')
+        assert(isfield(allTrainingDataStructure, 'mask'))
+        assert(isfield(allTrainingDataStructure, 'feature'))
+   else
         
         dividerWaitbar=10^(floor(log10(size(TrainMat,1)))-1); % Limiting the access to waitbar
         wbr = waitbar(0, ['Loading training data, image 0/' int2str(size(TrainMat,1))]);
@@ -92,7 +94,7 @@ function trainingDataStructure = createTrainStructure(loadImages)
         
         if loadImages % time saving measure
             save(allTrainingDataStructure_path,'allTrainingDataStructure'),
-            cprintf('*red',['Saved allTtrainingDataStructure from ' allTrainingDataStructure_path '\n'])
+            cprintf('*[1,0,1]',['Saved allTtrainingDataStructure to ' allTrainingDataStructure_path '\n'])
         end
 
     end
@@ -117,59 +119,78 @@ function trainingDataStructure = createTrainStructure(loadImages)
             error(['Number of masks (' int2str(size(masks,1)) ') not equal to number of training crops (' int2str(nDetections) ').'])
         end
 
-        for i=1:size(FPMat,1)
-            FPSample = FPMat(i,:);
-            camera                            = FPSample(1);
-            frame                             = FPSample(2);
-            bb                                = FPSample(3:6);
-            allFPDataStructure(i).camera      = camera;
-            allFPDataStructure(i).frame       = frame;
-            allFPDataStructure(i).personId    = 999;
-            if loadImages
-                % TODO: IMPLEMENT CROPPING ON THE FLY HERE
-                if ~offlineCrop_and_not_OnTheFlyFeatureExtraction
-                    % ON-THE-FLY IMAGE CROPPING
-                    subImage = getFrameAndCrop(camera, frame, bb);
-                else % if cropped offline
-                    subImage = imread([falsePositiveClassDirectory sprintf('/FP%06d.png',i)]);
+        allFPDataStructure_path = [trainingSetPath '/allFPDataStructure.mat'];
+        if loadImages && exist(allFPDataStructure_path,'file')
+            load(allFPDataStructure_path),
+            cprintf('*blue',['Loaded allFPDataStructure from ' allFPDataStructure_path '\n'])
+            assert(isfield(allFPDataStructure, 'camera'))
+            assert(isfield(allFPDataStructure, 'frame'))
+            assert(isfield(allFPDataStructure, 'personId'))
+            assert(isfield(allFPDataStructure, 'image'),'SEEMS like the cached allFP file was saved without the images :P...')
+            assert(isfield(allFPDataStructure, 'mask'))
+            assert(isfield(allFPDataStructure, 'feature'))
+        else
+            
+            for i=1:size(FPMat,1)
+                FPSample = FPMat(i,:);
+                camera                            = FPSample(1);
+                frame                             = FPSample(2);
+                bb                                = FPSample(3:6);
+                allFPDataStructure(i).camera      = camera;
+                allFPDataStructure(i).frame       = frame;
+                allFPDataStructure(i).personId    = 999;
+                if loadImages
+                    % TODO: IMPLEMENT CROPPING ON THE FLY HERE
+                    if ~offlineCrop_and_not_OnTheFlyFeatureExtraction
+                        % ON-THE-FLY IMAGE CROPPING
+                        subImage = getFrameAndCrop(camera, frame, bb);
+                    else % if cropped offline
+                        subImage = imread([falsePositiveClassDirectory sprintf('/FP%06d.png',i)]);
+                    end
+                    
+                    allFPDataStructure(i).image   = subImage;
+                    allFPDataStructure(i).mask       = FPmasks(i,:);
+                    
+                    % imshow(trainSampleImage)
+                    paddedImage = smartPadImageToBodyPartMaskSize(subImage);
+                    HSV = featureExtractionHandle(paddedImage,FPmasks(i,:));
+                    allFPDataStructure(i).feature     = HSV;
+                    
+                    % DEBUG visualization
+                    %figure(234),
+                    %subplot(1,5,1)
+                    %imshow( getFrameAndCrop(camera, frame, bb) ), title('Online Crop'),
+                    %
+                    %FPXXXpng = [falsePositiveClassDirectory '/' sprintf('F%06d.png',i)];
+                    %if exist(FPXXXpng,'file')
+                    %    subplot(1,4,2)
+                    %    imshow(imread(FPXXXpng))
+                    %    title('Cropped offline')
+                    %end
+                    %
+                    % subplot(1,5,3)
+                    % imshow(paddedImage), title('Padded'),
+                    %
+                    %subplot(1,5,4)
+                    %imshow(paddedImage), title('Masked')
+                    %hold on
+                    %plotBodyPartMasks(paddedImage,FPmasks(i,:));
+                    %hold off,
+                    %
+                    %subplot(1,5,5)
+                    %bar(HSV),
+                    % END DEBUG visualization
+                    
                 end
-
-                allFPDataStructure(i).image   = subImage;
-                allFPDataStructure(i).mask       = FPmasks(i,:);
-                
-                % imshow(trainSampleImage)
-                paddedImage = smartPadImageToBodyPartMaskSize(subImage);
-                HSV = featureExtractionHandle(paddedImage,FPmasks(i,:));
-                allFPDataStructure(i).feature     = HSV;
-                
-                % DEBUG visualization
-                %figure(234),
-                %subplot(1,5,1)
-                %imshow( getFrameAndCrop(camera, frame, bb) ), title('Online Crop'),
-                % 
-                %FPXXXpng = [falsePositiveClassDirectory '/' sprintf('F%06d.png',i)];
-                %if exist(FPXXXpng,'file')
-                %    subplot(1,4,2)
-                %    imshow(imread(FPXXXpng))
-                %    title('Cropped offline')
-                %end
-                % 
-                % subplot(1,5,3)
-                % imshow(paddedImage), title('Padded'),
-                %
-                %subplot(1,5,4)
-                %imshow(paddedImage), title('Masked')
-                %hold on
-                %plotBodyPartMasks(paddedImage,FPmasks(i,:));
-                %hold off,
-                % 
-                %subplot(1,5,5)
-                %bar(HSV),
-                % END DEBUG visualization
-
             end
+            %         SAVE HERE
+            if loadImages % time saving measure
+                save(allFPDataStructure_path,'allFPDataStructure'),
+                cprintf('*[1,0,1]',['Saved allFPDataStructure to ' allFPDataStructure_path '\n'])
+            end
+
         end
-        
+            
         allTrainingDataStructure = [allTrainingDataStructure allFPDataStructure];
         % trainingDataStructure = [trainingDataStructure allFPDataStructure];
     end
