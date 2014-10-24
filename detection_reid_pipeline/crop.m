@@ -173,7 +173,7 @@ for testCamera = testCameras
     close(wbr);
     
     dlmwrite([localCropsDirectoryForText '/allC.txt'],MatToSave);
-    cprintf('*red',['Saved allC.txt to ' localCropsDirectoryForText '\n'])
+    cprintf('*[1,0,1]',['Saved allC.txt to ' localCropsDirectoryForText '\n'])
     
 end
 

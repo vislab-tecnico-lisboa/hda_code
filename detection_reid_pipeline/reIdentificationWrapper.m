@@ -126,7 +126,7 @@ function reIdentificationWrapper()
         close(wbr);
         
         dlmwrite([reIdsDirectory '/allR.txt'],allRMatToSave);
-        cprintf('*red',['Saved allR.txt to ' reIdsDirectory '\n'])        
+        cprintf('*[1,0,1]',['Saved allR.txt to ' reIdsDirectory '\n'])        
     end
     
 return

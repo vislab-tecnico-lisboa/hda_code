@@ -93,6 +93,6 @@ for testCamera = testCameras
     close(wbr);
     
     dlmwrite([filteredCropsDirectory '/allF.txt'],MatToSave);
-    cprintf('*red',['Saved allF.txt to ' filteredCropsDirectory '\n'])
+    cprintf('*[1,0,1]',['Saved allF.txt to ' filteredCropsDirectory '\n'])
 end
 return

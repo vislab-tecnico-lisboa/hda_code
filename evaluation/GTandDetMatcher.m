@@ -78,7 +78,7 @@ function GTandDetMatcher()
         close(wbr);
         
         dlmwrite([reIdsAndGtDirectory '/allG.txt'],allGMatToSave);        
-        cprintf('*red',['Saved allG.txt to ' reIdsAndGtDirectory '\n'])
+        cprintf('*[1,0,1]',['Saved allG.txt to ' reIdsAndGtDirectory '\n'])
     end
 
 return

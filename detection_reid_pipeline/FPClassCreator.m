@@ -59,9 +59,9 @@ if exist(allUniqueFPs_allCameras_txt,'file') && exist(allFPs_allCameras_txt,'fil
         allUniqueFPs = [allUniqueFPs; allUniqueFPs_allCameras(allUniqueFPs_allCameras(:,1) == trainCamera,:)];
     end
     dlmwrite([FPclassDirectory '/allFP.txt'],allFPs);
-    cprintf('*red',['Saved allFP.txt to ' FPclassDirectory '\n'])
+    cprintf('*[1,0,1]',['Saved allFP.txt to ' FPclassDirectory '\n'])
     dlmwrite([FPclassDirectory '/allUniqueFP.txt'],allUniqueFPs);
-    cprintf('*red',['Saved allUniqueFP.txt to ' FPclassDirectory '\n'])
+    cprintf('*[1,0,1]',['Saved allUniqueFP.txt to ' FPclassDirectory '\n'])
 
 else
     MatToSave = [];
@@ -121,7 +121,7 @@ else
         
     end
     dlmwrite([FPclassDirectory '/allFP.txt'],MatToSave);
-    cprintf('*red',['Saved allFP.txt to ' FPclassDirectory '\n'])
+    cprintf('*[1,0,1]',['Saved allFP.txt to ' FPclassDirectory '\n'])
     
     
     %% From all FPs select only the unique ones (with different [x y w h])
@@ -238,7 +238,7 @@ else
         uniqueFPs = [uniqueFPs; uniqueThisCameraFPs];
     end
     dlmwrite([FPclassDirectory '/allUniqueFP.txt'],uniqueFPs);
-    cprintf('*red',['Saved allUniqueFP.txt to ' FPclassDirectory '\n'])
+    cprintf('*[1,0,1]',['Saved allUniqueFP.txt to ' FPclassDirectory '\n'])
 end
 
 return

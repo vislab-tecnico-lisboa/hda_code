@@ -112,7 +112,7 @@ function evaluatorPrecisionRecall()
             end
             close(wbr);
             save(PrecRecFile,'Precision_overAllFrames','Recall_overAllFrames'),
-            cprintf('*red',['Saved file with Precision and Recall to ' PrecRecFile '\n'])
+            cprintf('*[1,0,1]',['Saved file with Precision and Recall to ' PrecRecFile '\n'])
         end
         % Display values to build Table 2 of HDA+ paper
         Fscore = 2*(Precision_overAllFrames.*Recall_overAllFrames) ./ (Precision_overAllFrames+Recall_overAllFrames);
