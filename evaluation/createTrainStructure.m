@@ -55,9 +55,15 @@ function trainingDataStructure = createTrainStructure(loadImages)
         dividerWaitbar=10^(floor(log10(size(TrainMat,1)))-1); % Limiting the access to waitbar
         wbr = waitbar(0, ['Loading training data, image 0/' int2str(size(TrainMat,1))]);
         for i=1:size(TrainMat,1)
-            if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+            if loadImages
+                % Loading images and computing features takes long enough
+                % that you don't need to limit access to waitbar
                 waitbar(i/size(TrainMat,1), wbr, ['Loading training data, image ' int2str(i) '/' int2str(size(TrainMat,1))]);
-            end
+            else
+                if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+                    waitbar(i/size(TrainMat,1), wbr, ['Loading training data, image ' int2str(i) '/' int2str(size(TrainMat,1))]);
+                end
+            end                
             % trainSample = load([trainingSetPath '/' nameList(i).name]);
             trainSample = TrainMat(i,:);
             allTrainingDataStructure(i).camera      = trainSample(1);
