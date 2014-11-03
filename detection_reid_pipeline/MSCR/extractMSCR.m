@@ -29,10 +29,10 @@ if DEBUGplot
     plot([MiddleLegs,MiddleLegs],[Waist+1,heiM],'r','LineWidth',3);hold off;
 end
 
-MAP_KRNL = makeBodyKernel(resizedImage, Waist, MiddleTorso, MiddleLegs, Neck);
-if DEBUGplot
-    subplot(1,2,2),
-    imagesc(MAP_KRNL), axis image
-end
+% MAP_KRNL = makeBodyKernel(resizedImage, Waist, MiddleTorso, MiddleLegs, Neck);
+% if DEBUGplot
+%     subplot(1,2,2),
+%     imagesc(MAP_KRNL), axis image
+% end
 
 [mvec, pvec, MSCRblob] = ExtractMSCR_oneImage(resizedImage,fullmask,Neck,Waist);
