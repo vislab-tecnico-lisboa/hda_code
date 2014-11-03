@@ -86,12 +86,12 @@ function reIdentificationWrapper()
                         
             % Extracting HSV feature vector (10 bin per channel of each of
             % the 4 parts, totaling 120x1 vector)
-            HSV = featureExtractionHandle(paddedImage,masks(count,:));
+            feature = featureExtractionHandle(paddedImage,masks(count,:));
             
             % RE-ID classification, receives feature vector for test
             % sample, and trainingDataStructure that contains all
             % pertaining to the training samples (more info on createTrainStructure.m).
-            dist1toPedsPIDsI = reIdentifierHandle(HSV,trainingDataStructure);
+            dist1toPedsPIDsI = reIdentifierHandle(feature,trainingDataStructure);
                       
             allRMatToSave(count,:) = [dataLine(1:6) dist1toPedsPIDsI];
             

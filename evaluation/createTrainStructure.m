@@ -35,7 +35,7 @@ function trainingDataStructure = createTrainStructure(loadImages)
     TrainMat=dlmread([trainingSetPath '/allT.txt']);
     cprintf('*blue',['Loaded allT.txt from ' trainingSetPath '\n'])
     
-    allTrainingDataStructure_path = [trainingSetPath '/allTrainingDataStructure.mat'];
+    allTrainingDataStructure_path = [trainingSetPath '/allTrainingDataStructure_' featureExtractionName '.mat'];
     if recomputeAllCachedInformation && loadImages
         warning('off','MATLAB:DELETE:FileNotFound')
         delete(allTrainingDataStructure_path),
@@ -71,8 +71,8 @@ function trainingDataStructure = createTrainStructure(loadImages)
                 allTrainingDataStructure(i).mask       = masks(i,:);
                 % imshow(trainSampleImage)
                 paddedImage = smartPadImageToBodyPartMaskSize(allTrainingDataStructure(i).image);
-                HSV = featureExtractionHandle(paddedImage,masks(i,:));
-                allTrainingDataStructure(i).feature         = HSV;
+                feature = featureExtractionHandle(paddedImage,masks(i,:));
+                allTrainingDataStructure(i).feature         = feature;
                 %         % VISUALIZATION DEBUG
                 %         figure(23434),
                 %         subplot(1,5,1)
@@ -119,7 +119,7 @@ function trainingDataStructure = createTrainStructure(loadImages)
             error(['Number of masks (' int2str(size(masks,1)) ') not equal to number of training crops (' int2str(nDetections) ').'])
         end
 
-        allFPDataStructure_path = [trainingSetPath '/allFPDataStructure.mat'];
+        allFPDataStructure_path = [trainingSetPath '/allFPDataStructure_' featureExtractionName '.mat'];
         if loadImages && exist(allFPDataStructure_path,'file')
             load(allFPDataStructure_path),
             cprintf('*blue',['Loaded allFPDataStructure from ' allFPDataStructure_path '\n'])
@@ -153,8 +153,8 @@ function trainingDataStructure = createTrainStructure(loadImages)
                     
                     % imshow(trainSampleImage)
                     paddedImage = smartPadImageToBodyPartMaskSize(subImage);
-                    HSV = featureExtractionHandle(paddedImage,FPmasks(i,:));
-                    allFPDataStructure(i).feature     = HSV;
+                    feature = featureExtractionHandle(paddedImage,FPmasks(i,:));
+                    allFPDataStructure(i).feature     = feature;
                     
                     % DEBUG visualization
                     %figure(234),
@@ -178,7 +178,7 @@ function trainingDataStructure = createTrainStructure(loadImages)
                     %hold off,
                     %
                     %subplot(1,5,5)
-                    %bar(HSV),
+                    %bar(feature),
                     % END DEBUG visualization
                     
                 end
