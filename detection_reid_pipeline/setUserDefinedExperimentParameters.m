@@ -39,7 +39,8 @@ reIdentifierHandle      = @BhattacharryaNNReId; % Implemented example of NN clas
 %    @randomReId : determines the re-identification classifications randomly from the training class list
 %    @MSCR_NN_ReId : MSCR feature nearest neighbor computation
 featureExtractionHandle =  @extractHSVfromBodyParts; % Implemented example of HSV histogram extraction
- 
+% Other options:
+%    @extractMSCR 
 
 if strcmp(experimentVersion,'001')
     %use all default parameters
@@ -90,4 +91,19 @@ end
 if ~isempty(intersect(trainCameras,testCameras))
     warning(['Training set and testing set cameras overlap, are you sure you want to do this?' ...
         ' (cameras ' int2str(intersect(trainCameras,testCameras)) ')'])
+end
+
+% If either the classifier or the feature extraction is MSCR, the other
+% must be MSCR as well.
+if strcmp(reIdentifierName,'MSCR_NN_ReId') && ~strcmp(featureExtractionName,'extractMSCR')
+    warning(['reIdentifier set to MSCR_NN_ReId and featureExtraction set to ' featureExtractionName '. MSCR_NN_ReId only works with extractMSCR as featureExtraction.'])
+    warning(['Setting featureExtraction to extractMSCR'])
+    featureExtractionHandle = @extractMSCR;
+    featureExtractionName = func2str(featureExtractionHandle);
+end
+if ~strcmp(reIdentifierName,'MSCR_NN_ReId') && strcmp(featureExtractionName,'extractMSCR')
+    warning(['reIdentifier set to ' reIdentifierName ' and featureExtraction set to ' featureExtractionName '. extractMSCR requires MSCR_NN_ReId as RE-ID classifier.'])
+    warning(['Setting reIdentifier to MSCR_NN_ReId'])
+    reIdentifierHandle = @MSCR_NN_ReId;
+    reIdentifierName =  func2str(reIdentifierHandle);
 end
