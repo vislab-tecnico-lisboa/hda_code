@@ -143,7 +143,7 @@ elseif strcmp(mode,'repository')
     
     
     Path_for_images = [experimentDataDirectory sprintf('/camera%02d', testCamera) ];
-    set(gcf,'color','w'); export_fig('-painters','-r300','-q101',[Path_for_images '/' legendStr '.png'])
+    set(gcf,'color','w'); export_fig('-painters','-r200','-q101',[Path_for_images '/' legendStr '.png'])
     saveas(gcf,[Path_for_images '/' legendStr], 'fig')
 end
 
