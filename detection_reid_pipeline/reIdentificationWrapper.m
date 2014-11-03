@@ -64,9 +64,11 @@ function reIdentificationWrapper()
         dividerWaitbar=10^(floor(log10(nFiles))-1); % Limiting the access to waitbar
         allRMatToSave = zeros(nFiles,6+nPed);
         for count=1:nFiles
-            if (round(count/dividerWaitbar)==count/dividerWaitbar) % Limiting the access to waitbar
+            % if (round(count/dividerWaitbar)==count/dividerWaitbar) % Limiting the access to waitbar
+            % but the re-id classifiers so far have been slow enough that
+            % we don't need to limit the access to waitbar
                 waitbar(count/nFiles, wbr, ['ReIdentifying on camera ' int2str(testCamera) ', image ' int2str(count) '/' int2str(nFiles)]);
-            end
+            % end
             dataLine = filteredCropsMat(count,:);
             if dataLine(7) == 0    % if "active" bit turned off
                 continue,          % leave line in matrix empty
