@@ -36,8 +36,8 @@ useFalsePositiveClass   = 1;
 trainingSetPath         = [hdaRootDirectory '/hda_sample_train_data'];
 reIdentifierHandle      = @BhattacharryaNNReId; % Implemented example of NN classifier with Bhattacharrya distance.
 % Other options:
-% 	@randomReId : determines the re-identification classifications randomly from the training class list
-%                          @MSCR_NN_ReId : MSCR feature nearest neighbor computation
+%    @randomReId : determines the re-identification classifications randomly from the training class list
+%    @MSCR_NN_ReId : MSCR feature nearest neighbor computation
 featureExtractionHandle =  @extractHSVfromBodyParts; % Implemented example of HSV histogram extraction
  
 
