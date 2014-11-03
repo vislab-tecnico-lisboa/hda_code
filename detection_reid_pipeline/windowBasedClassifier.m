@@ -297,9 +297,9 @@ function plotPRcurve(Precision_overAllFrames, Recall_overAllFrames, detectorName
     hold off,
     
     % For PRpoints.pdf figure
-    set(gcf,'Position',[  269   404   489   182]);
-    axis([0,100,0,40]);
-    set(gcf,'color','w'); export_fig -painters -r600 -q101 PRpoints.pdf
+    %set(gcf,'Position',[  269   404   489   182]);
+    %axis([0,100,0,40]);
+    %set(gcf,'color','w'); export_fig -painters -r600 -q101 PRpoints.pdf
 
 
 return
