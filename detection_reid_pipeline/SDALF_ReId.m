@@ -1,4 +1,4 @@
-function dist1toPedsPIDsI = MSCRwHSV_NN_ReId(Blob,trainingDataStructure)
+function dist1toPedsPIDsI = SDALF_ReId(Blob,trainingDataStructure)
 %BhattacharryaNNReId Nearest Neighbor classification with Bhattacharrya distance
 % 
 %   dist1toPedsPIDsI = BhattacharryaNNReId(HSV,trainingDataStructure)
@@ -20,13 +20,15 @@ trainSpidVector = [trainingDataStructure.personId];
 unique_trainSpid = unique([trainingDataStructure.personId]);
 
 MSCRdist1toAll = MSCRmatch_1toall(Blob', [trainingDataStructure.feature]);
+
 rabo = [trainingDataStructure.feature];
 dist1toAllwHSV = BhattDist1toAll(Blob.wHSV', [rabo.wHSV]');
-%dist1toAllF = BhattDist1toAll(testFeatures.F(count,:), [trainingDataStructure.F]');
-% in(HSV' - testFeatures.F(count,:))
+
+dist1toAllTxPatch = CompareEpitext_1toAll(Blob.TxPatch, [rabo.TxPatch]);
+
 
 % MSCRdist1toAll = 0.4*distY + 0.6*distColor
-dist1toAll = MSCRdist1toAll' + dist1toAllwHSV;
+dist1toAll = MSCRdist1toAll' + dist1toAllwHSV + 0.5*dist1toAllTxPatch';
 
 % Compute minimum of distances for each train ped (not sample)
 nPed = length(unique_trainSpid);
