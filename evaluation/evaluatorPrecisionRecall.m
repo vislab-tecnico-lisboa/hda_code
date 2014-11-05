@@ -50,6 +50,8 @@ function evaluatorPrecisionRecall()
             cprintf('*blue',['Loaded file with Precision and Recall from ' PrecRecFile '\n'])
         else                
             wbr = waitbar(0, ['Precision/Recall on camera ' int2str(testCamera)]);
+            Precision_overAllFrames = -ones(1,nTrainPeds);
+            Recall_overAllFrames    = -ones(1,nTrainPeds);
             for R=1:nTrainPeds
                 waitbar(R/nTrainPeds, wbr, ['Precision/Recall on camera ' int2str(testCamera) ', Rank ' int2str(R) '/' int2str(nTrainPeds)]);
 
@@ -70,7 +72,7 @@ function evaluatorPrecisionRecall()
 
                 % For each ped in the ground truth, put a 1 in the frame
                 % where he appears in matrix frameGTfull (P x Frame)
-                frameGTfull = false(length([unique_trainSpid]),TotalFrames);
+                frameGTfull = false(length(unique_trainSpid),TotalFrames);
                 for GTSampleI = 1:size(GTreIdsAndGtMat,1)
                     GTSample = GTreIdsAndGtMat(GTSampleI,:);
                     if min(GTSample==zeros(size(GTSample))) % if line is "empty" (all zeros) 
@@ -116,7 +118,8 @@ function evaluatorPrecisionRecall()
         end
         % Display values to build Table 2 of HDA+ paper
         Fscore = 2*(Precision_overAllFrames.*Recall_overAllFrames) ./ (Precision_overAllFrames+Recall_overAllFrames);
-        display([num2str(Fscore(1)*100,'%0.1f') ' & ' num2str(Precision_overAllFrames(1)*100,'%0.1f') ' & ' num2str(Recall_overAllFrames(1)*100,'%0.1f')])
+        display('Fscore Prec   Rec')
+        display(['  ' num2str(Fscore(1)*100,'%0.1f') ' & ' num2str(Precision_overAllFrames(1)*100,'%0.1f') ' & ' num2str(Recall_overAllFrames(1)*100,'%0.1f')])
 
         % Make Fig. 7 of HDA+ paper, only plot Rank 1 points, in a single
         % figure
@@ -138,37 +141,37 @@ function plotPRcurve(Precision_overAllFrames, Recall_overAllFrames, detectorName
     if strcmp(detectorName,'GtAnnotationsClean')
         % default values, thich full black line
         markersize = 25;
-        legendStr = ['MANUAL_c_l_e_a_n'];
+        legendStr = 'MANUAL_c_l_e_a_n';
     elseif strcmp(detectorName,'GtAnnotationsAll')
         markersize = 15;
         linewidth= 2.0;
-        legendStr = ['MANUAL_a_l_l'];
+        legendStr = 'MANUAL_a_l_l';
     elseif ~useMutualOverlapFilter && ~useFalsePositiveClass
         markerstyle = 's';
         markersize = 5;
         linecolor = 'g';
-        legendStr = ['DIRECT (FP OFF, OCC OFF)'];
+        legendStr = 'DIRECT (FP OFF, OCC OFF)';
     elseif useMutualOverlapFilter && ~useFalsePositiveClass        
         markerstyle = 'x';
         markersize = 10;
         linewidth= 2.0;
         linecolor = 'r';
         linestyle= '--';
-        legendStr = ['FP OFF, OCC ON'];
+        legendStr = 'FP OFF, OCC ON';
     elseif ~useMutualOverlapFilter && useFalsePositiveClass
         markerstyle = 'o';
         markersize = 7;
         linewidth= 2.0;
         linecolor = 'b';
         linestyle= ':';
-        legendStr = ['FP ON, OCC OFF'];
+        legendStr = 'FP ON, OCC OFF';
     elseif useMutualOverlapFilter && useFalsePositiveClass
         markerstyle = 'd';
         markersize = 7;
         linewidth= 2.0;
         linecolor = [1 0.65 0];
         linestyle= '-.';
-        legendStr = ['FP ON, OCC ON'];
+        legendStr = 'FP ON, OCC ON';
     end
     legendStr = [legendStr ' cam' int2str(testCamera)];
 
@@ -179,7 +182,7 @@ function plotPRcurve(Precision_overAllFrames, Recall_overAllFrames, detectorName
         figure(675), hold on,
     end
         
-    eh = plot(Precision_overAllFrames*100,Recall_overAllFrames*100, ...
+    plot(Precision_overAllFrames*100,Recall_overAllFrames*100, ...
         [markerstyle linestyle],'Color',linecolor,'Linewidth',linewidth, ...
         'DisplayName',legendStr,'MarkerSize',markersize);
     axis([0,100,0,100]);
