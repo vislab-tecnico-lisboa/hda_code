@@ -137,7 +137,18 @@ function trainingDataStructure = createTrainStructure(loadImages)
             assert(isfield(allFPDataStructure, 'feature'))
         else
             
+            dividerWaitbar=10^(floor(log10(size(FPMat,1)))-1); % Limiting the access to waitbar
+            wbr = waitbar(0, ['Loading FP training data, image 0/' int2str(size(FPMat,1))]);
             for i=1:size(FPMat,1)
+                if loadImages
+                    % Loading images and computing features takes long enough
+                    % that you don't need to limit access to waitbar
+                    waitbar(i/size(FPMat,1), wbr, ['Loading FP training data, image ' int2str(i) '/' int2str(size(FPMat,1))]);
+                else
+                    if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+                        waitbar(i/size(FPMat,1), wbr, ['Loading FP training data, image ' int2str(i) '/' int2str(size(FPMat,1))]);
+                    end
+                end
                 FPSample = FPMat(i,:);
                 camera                            = FPSample(1);
                 frame                             = FPSample(2);
@@ -189,6 +200,8 @@ function trainingDataStructure = createTrainStructure(loadImages)
                     
                 end
             end
+            close(wbr);
+
             %         SAVE HERE
             if loadImages % time saving measure
                 save(allFPDataStructure_path,'allFPDataStructure'),
