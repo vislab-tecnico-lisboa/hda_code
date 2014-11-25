@@ -1,4 +1,4 @@
-function GTandDetMatcher()
+function allGMatToSave = GTandDetMatcher(mode)
 %GTANDDETMATCHER associates GT labels to ReId BB's.
 % Reads GT labels, reads ReId results, computes the overlap between each
 % (GT BB, ReId BB) in a frame, and associates each ReId BB to the GT BB
@@ -9,6 +9,10 @@ function GTandDetMatcher()
 
 	declareGlobalVariables,
 
+    if ~exist('mode','var')
+        mode = 'normal';
+    end
+    
     for testCamera = testCameras
         fprintf('gtAndDetMatcher: Working on camera: %d\n',testCamera);
         
@@ -22,10 +26,11 @@ function GTandDetMatcher()
             delete([reIdsAndGtDirectory '/allG.txt']);
             warning('on','MATLAB:DELETE:FileNotFound')
         end
-        if exist([reIdsAndGtDirectory '/allG.txt'],'file')
-            cprintf('blue',['allG.txt already exists at ' reIdsAndGtDirectory '\n']),
-            continue,
-        end
+        %if exist([reIdsAndGtDirectory '/allG.txt'],'file')
+        %    cprintf('blue',['allG.txt already exists at ' reIdsAndGtDirectory '\n']),
+        %    % TODO? MAYBE DLMREAD HERE TO PRODUCE OUTPUT?
+        %    continue,
+        %end
         fid = fopen([reIdsAndGtDirectory '/info.txt'],'w');
         fprintf(fid,'Ground Truth ID and list of estimated ID''s for each crop, sorted according to rank.\n');
         fprintf(fid,'Format: \n');
@@ -36,7 +41,12 @@ function GTandDetMatcher()
         GTName = [hdaRootDirectory '/hda_annotations' sprintf('/cam%02d.txt',testCamera)];
         GTMat = vbb('vbbLoadTxt',GTName);
         
-        reIdsMat = dlmread([reIdsDirectory '/allR.txt']);
+        if strcmp(mode,'normal')
+            reIdsMat = dlmread([reIdsDirectory '/allR.txt']);
+        elseif strcmp(mode,'detections')
+            localDetectionsDirectory = [thisDetectorDetectionsDirectory sprintf('/camera%02d',testCamera) '/Detections'];
+            reIdsMat = dlmread([localDetectionsDirectory '/allD.txt']);
+        end
         nReIds=size(reIdsMat,1);
         %Work on one detectition file at a time
         wbr = waitbar(0, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image 0/' int2str(nReIds)]);
@@ -53,9 +63,9 @@ function GTandDetMatcher()
                 continue,
             end
             frame = dataLine(2);
+
             %Select the GT data for this image
             gt=GTMat.objLists{1,frame+1}; 
-
             isFalsePositive = 1;
             overlap =[];
             for gtId=1:size(gt,2) 
@@ -68,46 +78,22 @@ function GTandDetMatcher()
             else
               [value, maxOvlpId] = max(overlap);  
               label = GTMat.objLbl{1,gt(1,maxOvlpId).id};  
-              label = sscanf(label,'person%d');
-              
+              label = sscanf(label,'person%d');              
             end
+            label2 = selectGTdataOfImage(GTMat, dataLine(3:6), frame);
+            assert(label==label2)
             
             allGMatToSave(image,:) = [dataLine(1),dataLine(2),label,dataLine(7:end)];
             
         end
         close(wbr);
         
-        dlmwrite([reIdsAndGtDirectory '/allG.txt'],allGMatToSave);        
-        cprintf('*[1,0,1]',['Saved allG.txt to ' reIdsAndGtDirectory '\n'])
+        if strcmp(mode,'normal')
+            dlmwrite([reIdsAndGtDirectory '/allG.txt'],allGMatToSave);
+            cprintf('*[1,0,1]',['Saved allG.txt to ' reIdsAndGtDirectory '\n'])
+        end
     end
 
 return
 
 
-function [match cost] = computeBbMatch( r1, r2, threshold)
-% r = [u0, v0, width, height]
-% threshold should be a value between 0 and 1, typically 0.5
-
-      %Do r1 and r2 intersect? Check if you can define a rectangle which is the intersection of the two.
-      u0Int = max( r1(2), r2(2) ); %rightmost left edge
-      v0Int = max( r1(1), r2(1) ); %lower top edge
-      u1Int = min( r1(2) + r1(4), r2(2) +r2(4) ); %leftmost right edge
-      v1Int = min( r1(1) + r1(3), r2(1) +r2(3) ); %upper bottom edge
-      
-      if( ( u0Int < u1Int ) && ( v0Int < v1Int ) ) %YES, intersection
-        overlapArea = (u1Int - u0Int) * (v1Int - v0Int);
-        unionArea = r1(3)*r1(4) + r2(3)*r2(4) - overlapArea;
-        if( (overlapArea/unionArea) >= threshold)
-          match = true;
-          cost  = (unionArea-overlapArea)/unionArea; %Encodes how bad the match is. NonOverlap/Union.
-        else
-          match = false;
-          cost  = inf;
-        end    
-      else
-        overlapArea = 0;
-        match = false;
-        cost  = inf;
-      end  
-      
-return
