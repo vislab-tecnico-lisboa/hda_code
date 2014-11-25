@@ -47,9 +47,9 @@ function trainingDataStructure = createTrainStructure(loadImages)
         assert(isfield(allTrainingDataStructure, 'camera'))
         assert(isfield(allTrainingDataStructure, 'frame'))
         assert(isfield(allTrainingDataStructure, 'personId'))
-        assert(isfield(allTrainingDataStructure, 'image'),'SEEMS like the cached allTraining file was saved without the images :P...')
-        assert(isfield(allTrainingDataStructure, 'mask'))
-        assert(isfield(allTrainingDataStructure, 'feature'))
+        %assert(isfield(allTrainingDataStructure, 'image'),'SEEMS like the cached allTraining file was saved without the images :P...')
+        %assert(isfield(allTrainingDataStructure, 'mask'))
+        assert(isfield(allTrainingDataStructure, 'feature'),'SEEMS like the cached allTraining file was saved without the images :P...')
    else
         
         dividerWaitbar=10^(floor(log10(size(TrainMat,1)))-1); % Limiting the access to waitbar
@@ -71,12 +71,14 @@ function trainingDataStructure = createTrainStructure(loadImages)
             allTrainingDataStructure(i).personId    = trainSample(3);
             % trainingDataStructure(i).fullyVisible= trainSample(4); % not useful
             if loadImages
-                allTrainingDataStructure(i).image       = imread([trainingSetPath '/' nameList(i).name]);
+                % allTrainingDataStructure(i).image       = imread([trainingSetPath '/' nameList(i).name]);
+                image       = imread([trainingSetPath '/' nameList(i).name]);
                 assert( i==sscanf(nameList(i).name,'T%06d.png') , 'Bitch.. ''dir'' is not returning an ordered list of files..')
                 
-                allTrainingDataStructure(i).mask       = masks(i,:);
+                %allTrainingDataStructure(i).mask       = masks(i,:);
+                mask       = masks(i,:);
                 % imshow(trainSampleImage)
-                paddedImage = smartPadImageToBodyPartMaskSize(allTrainingDataStructure(i).image);
+                paddedImage = smartPadImageToBodyPartMaskSize(image);
                 feature = featureExtractionHandle(paddedImage,masks(i,:));
                 allTrainingDataStructure(i).feature         = feature;
                 %         % VISUALIZATION DEBUG
@@ -132,9 +134,9 @@ function trainingDataStructure = createTrainStructure(loadImages)
             assert(isfield(allFPDataStructure, 'camera'))
             assert(isfield(allFPDataStructure, 'frame'))
             assert(isfield(allFPDataStructure, 'personId'))
-            assert(isfield(allFPDataStructure, 'image'),'SEEMS like the cached allFP file was saved without the images :P...')
-            assert(isfield(allFPDataStructure, 'mask'))
-            assert(isfield(allFPDataStructure, 'feature'))
+            % assert(isfield(allFPDataStructure, 'image'))
+            % assert(isfield(allFPDataStructure, 'mask'))
+            assert(isfield(allFPDataStructure, 'feature'),'SEEMS like the cached allFP file was saved without the images :P...')
         else
             
             dividerWaitbar=10^(floor(log10(size(FPMat,1)))-1); % Limiting the access to waitbar
@@ -165,8 +167,8 @@ function trainingDataStructure = createTrainStructure(loadImages)
                         subImage = imread([falsePositiveClassDirectory sprintf('/FP%06d.png',i)]);
                     end
                     
-                    allFPDataStructure(i).image   = subImage;
-                    allFPDataStructure(i).mask       = FPmasks(i,:);
+                    % allFPDataStructure(i).image   = subImage;
+                    % allFPDataStructure(i).mask       = FPmasks(i,:);
                     
                     % imshow(trainSampleImage)
                     paddedImage = smartPadImageToBodyPartMaskSize(subImage);
