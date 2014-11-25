@@ -24,6 +24,7 @@ if max([heiM, widM] ~= [hei, wid])
 else
     resizedMaskSet = maskset;
 end
+hold on,
 for partIt = 1:4
     %B = bwboundaries(masks{count,partIt});
     B = bwboundaries(resizedMaskSet{partIt});
@@ -42,3 +43,4 @@ for partIt = 1:4
         plot(boundary(:,2), boundary(:,1), color, 'LineWidth', 3)
     end
 end
+hold off,
