@@ -1,5 +1,27 @@
 function evaluatorCMC(mode)
-% evaluatorCMC script
+%evaluatorCMC Create and plot a CMC curve.
+% 
+%   evaluatorCMC() plots CMC curves with color and style of paper (thick
+%   full black for MANUALclean, thin full black for MANUALall, full green
+%   for DIRECT, dashed red for FP OFF OCC ON, dotted blue for FP ON OCC OFF, 
+%   and dash-dot orange for FP ON, OCC ON.
+%
+%   evaluatorCMC('default') is the same as evaluatorCMC().
+% 
+%   evaluatorCMC('repository') plots CMC curves with color and style for
+%   the repository of results. Currently this means full black for NN HSV [1], 
+%   dashed black for NN MSCR [2], and full blue for SDALF [3]. You should
+%   choose and add your prefered color and style for your results below.
+%   This mode of operation also saves the fig file to the respective
+%   experiment_data folder and opens the respective repository of results
+%   figure (to make it easy to copy paste from one fig to another).
+%   
+%   evaluatorCMC('development') plots CMCs with random style and color.
+%   
+% 
+%   [1] Dario Figueira, Matteo Taiana, Athira Nambiar, Jacinto Nascimento, Alexandre Bernardino, ”The HDA+ data set for research on fully automated re-identification systems“, in ECCV workshop, 2014.
+%   [2] Forssen, P.-E., “Maximally Stable Colour Regions for Recognition and Matching,” in Computer Vision and Pattern Recognition (CVPR), 2007.
+%   [3] M. Farenzena, L. Bazzani, A. Perina, V. Murino, and M. Cristani, ”Person Re-identification by Symmetry-Driven Accumulation of Local Features”  In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2010
 
 if ~exist('mode','var')
     mode = 'default';
@@ -56,14 +78,12 @@ for testCamera = testCameras
     numTestSamples = sum(CM) + FPs;
     CMC = cumsum(CM) / numTestSamples * 100;
     
-    %         plotCMC(CMC, detectorName, reIdentifierName, reIdsAndGtMat, useMutualOverlapFilter, useFalsePositiveClass, testCamera);
     plotCMC(CMC, testCamera, mode);
 end
 
 return
 
 
-% function plotCMC(CMC, detectorName, reIdentifierName, reIdsAndGtMat, useMutualOverlapFilter, useFalsePositiveClass, testCamera)
 function plotCMC(CMC, testCamera, mode)
 
 if ~exist('mode','var')
@@ -82,7 +102,7 @@ elseif strcmp(detectorName,'GtAnnotationsAll')
     legendStr = ['MANUAL_a_l_l'];
 elseif ~useMutualOverlapFilter && ~useFalsePositiveClass
     linecolor = 'g';
-    legendStr = ['DIRECT'];
+    legendStr = ['DIRECT (FP OFF, OCC OFF)'];
 elseif useMutualOverlapFilter && ~useFalsePositiveClass
     linecolor = 'r';
     linestyle= '--';
@@ -100,7 +120,8 @@ legendStr = [legendStr ' cam' int2str(testCamera)];
 
 
 figure(839754), hold on,
-% TODO: put here open saved figure in repository of results
+% TODO: open here the saved figure in repository of results, so new line is
+% automatically added to figure?
 
 nAUC = sum(CMC)/length(CMC)
 % numberActiveDetections = sum(reIdsAndGtMat(:,1)~=0);
@@ -162,9 +183,7 @@ elseif strcmp(mode,'development')
     numberOfColors = 10;
     cmap = hsv(numberOfColors);
     set(eh,'Color',cmap(randi(numberOfColors),:));    
-    
-    
-    
+            
 end
 
 % To create a prettier pdf figure
