@@ -1056,7 +1056,11 @@ if(~isempty(annNm)), filesApi.openAnn(annNm); end
         fVid_consistent(ind) = '/';
         ind=strfind(fVid_consistent,'/');
         cam=str2num(fVid_consistent(ind(end)+4:ind(end)+5));
-        folderName = [fVid_consistent(1:ind(end)) 'extractedImagesCam' int2str(cam)];
+        if isempty(cam)
+            cam = str2num(fVid_consistent(ind(end)+7:ind(end)+8));
+        end
+        % folderName = [fVid_consistent(1:ind(end)) 'extractedImagesCam' int2str(cam)];
+        folderName = ['./extractedImagesCam' int2str(cam)];
         if ~exist(folderName,'dir')
             mkdir(folderName)
         end
