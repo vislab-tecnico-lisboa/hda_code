@@ -110,6 +110,7 @@ axis([1,length(CMC),0,100]);
 xlabel('Rank Score')
 ylabel('Re-identification %')
 legend('Location','SouthEast');
+plotedit on
 
 if strcmp(mode,'default')
     % Default colors and style used in the paper, one color and style
@@ -124,7 +125,7 @@ elseif strcmp(mode,'repository')
     title([legendStr])
     
     % Substitute 'NN HSV [1]' with your desired legend string
-    set(eh,'DisplayName','NN HSV [1]');
+    set(eh,'DisplayName',['[1] NN HSV (' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%)']);
     % Substitute 'k' with your desired line color
     set(eh,'Color','k');
     % Substitute '-' with your desired line style
@@ -132,23 +133,39 @@ elseif strcmp(mode,'repository')
     
     % Code to plot multiple algorithm legends
     if strcmp(reIdentifierName, 'BhattacharryaNNReId')
-        set(eh,'DisplayName','NN HSV [1]');
+        set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) NN HSV [1]']);
         set(eh,'linestyle','-');
         set(eh,'Color','k');
     elseif strcmp(reIdentifierName, 'MSCR_NN_ReId')
-        set(eh,'DisplayName','NN MSCR [2]');
+        set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) NN MSCR [2]']);
         set(eh,'linestyle','--');
         set(eh,'Color','k');
+    elseif strcmp(reIdentifierName, 'SDALF_ReId')
+        set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) SDALF [3]']);
+        set(eh,'linestyle','-');
+        set(eh,'Color','b');
     end
-    
+    hold off,    
     
     Path_for_images = [experimentDataDirectory sprintf('/camera%02d', testCamera) ];
     set(gcf,'color','w'); export_fig('-painters','-r150','-q101',[Path_for_images '/' legendStr '.png'])
     saveas(gcf,[Path_for_images '/' legendStr], 'fig')
-end
+    
+    open([hdaRootDirectory '/hda_code/Repository of Results/' legendStr '.fig'])
+    plotedit on
 
-plotedit on
-hold off,
+elseif strcmp(mode,'development')
+    title([legendStr])
+    set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) ' featureExtractionName ]);
+    lineStyles={'-','--','-.',':'};
+    set(eh,'linestyle',lineStyles{randi(length(lineStyles))});
+    numberOfColors = 10;
+    cmap = hsv(numberOfColors);
+    set(eh,'Color',cmap(randi(numberOfColors),:));    
+    
+    
+    
+end
 
 % To create a prettier pdf figure
 %set(gcf,'color','w'); export_fig -painters -r600 -q101 6CMCs.pdf
