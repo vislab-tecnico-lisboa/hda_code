@@ -11,14 +11,7 @@ function reIdentificationWrapper()
         
     for testCamera = testCameras
         fprintf('re-identification: Working on camera: %d\n',testCamera);
-   
-        % No need to filter by test camera here, since we're using
-        % trainCameras list to create the structure, and it selects which
-        % cameras to use there
-        % Filter out test camera from training data structure
-        % trainDataStructNoTestCamera = trainingDataStructure([trainingDataStructure.camera] ~= testCamera);
-        % numberTrainingPedestrians = length(unique([trainDataStructNoTestCamera.personId]));
-        
+           
         filteredCropsDirectory = [experimentDataDirectory sprintf('/camera%02d',testCamera) '/FilteredCrops'];
 
         % Loading allF here (before the if exist test) just to make it easy
