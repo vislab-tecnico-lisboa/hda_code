@@ -69,41 +69,36 @@ elseif strcmp(experimentVersion,'MANUALall_cam17')
     useMutualOverlapFilter = 1;
     reIdentifierHandle = @BhattacharryaNNReId;
 
+% Example usage of the toy dataset with only 3 people, one training and one
+% testing image each. Nearest-neighbor with HSV histograms only reaches 66% first rank in
+% this dataset, but BVT (a variant of HSV) reaches 100%
+elseif strcmp(experimentVersion,'Toy3_BVT')
+    trainCameras  = [17 18 19 40 50 53 54 56 57 58 59]; 
+    testCameras = [60]; 
+    detectorName = 'Toy3';
+    useFalsePositiveClass = 0;
+    useMutualOverlapFilter = 0;
+    reIdentifierHandle = @BhattacharryaNNReId;
+    featureExtractionHandle =  @extractBVT; 
+    trainingSetPath         = [hdaRootDirectory '/hda_sample_train_data_toy3'];    
+
+% A bit tougher toy dataset with 4 people, and two training and two
+% testing image each. 
+elseif strcmp(experimentVersion,'Toy3_BVT')
+    trainCameras  = [17 18 19 40 50 53 54 56 57 58 59]; 
+    testCameras = [60]; 
+    detectorName = 'Toy8';
+    useFalsePositiveClass = 0;
+    useMutualOverlapFilter = 0;
+    reIdentifierHandle = @BhattacharryaNNReId;
+    featureExtractionHandle =  @extractBVT; 
+    trainingSetPath         = [hdaRootDirectory '/hda_sample_train_data_toy8'];    
+        
 else
     error(['Unrecognized experimentVersion: ' experimentVersion])
 end
 
-reIdentifierName =  func2str(reIdentifierHandle);
-featureExtractionName = func2str(featureExtractionHandle);
-
 %% Error checking
 
-% There are no False Positives if the "detector" is the manual annotations,
-% so if set to 1, resetting it to 0
-if strcmp(detectorName, 'GtAnnotationsClean') || strcmp(detectorName, 'GtAnnotationsAll')
-    if useFalsePositiveClass
-        warning(['setUserDefinedExperimentParameters: There are no False Positives in the ' detectorName ' annotations. Setting useFalsePositiveClass to 0.'])
-        useFalsePositiveClass = 0;
-    end
-end
+userDefinedExperimentParametersErrorChecking,
 
-% Check if train and test set are non-overlapping
-if ~isempty(intersect(trainCameras,testCameras))
-    warning(['Training set and testing set cameras overlap, are you sure you want to do this?' ...
-        ' (cameras ' int2str(intersect(trainCameras,testCameras)) ')'])
-end
-
-% If either the classifier or the feature extraction is MSCR, the other
-% must be MSCR as well.
-if strcmp(reIdentifierName,'MSCR_NN_ReId') && ~strcmp(featureExtractionName,'extractMSCR')
-    warning(['reIdentifier set to MSCR_NN_ReId and featureExtraction set to ' featureExtractionName '. MSCR_NN_ReId only works with extractMSCR as featureExtraction.'])
-    warning(['Setting featureExtraction to extractMSCR'])
-    featureExtractionHandle = @extractMSCR;
-    featureExtractionName = func2str(featureExtractionHandle);
-end
-if ~strcmp(reIdentifierName,'MSCR_NN_ReId') && strcmp(featureExtractionName,'extractMSCR')
-    warning(['reIdentifier set to ' reIdentifierName ' and featureExtraction set to ' featureExtractionName '. extractMSCR requires MSCR_NN_ReId as RE-ID classifier.'])
-    warning(['Setting reIdentifier to MSCR_NN_ReId'])
-    reIdentifierHandle = @MSCR_NN_ReId;
-    reIdentifierName =  func2str(reIdentifierHandle);
-end
