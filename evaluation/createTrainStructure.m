@@ -1,4 +1,4 @@
-function trainingDataStructure = createTrainStructure(loadImages)
+function [trainingDataStructure, allTrainingDataStructure] = createTrainStructure(loadImages)
 %createTrainStructure  Creates structure with training data.
 %   function trainingDataStructure = createTrainStructure(loadImages)
 % 
@@ -217,7 +217,7 @@ function trainingDataStructure = createTrainStructure(loadImages)
     end
 
     % Keep only the training samples from specified training cameras
-    if exist('trainCameras','var')
+    if exist('trainCameras','var') && ~isempty(trainCameras)
         trainingDataStructure = [];
         for trainCamera = trainCameras
             trainingDataStructure = [trainingDataStructure allTrainingDataStructure([allTrainingDataStructure.camera] == trainCamera)];
