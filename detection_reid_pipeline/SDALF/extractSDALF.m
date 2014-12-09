@@ -14,6 +14,8 @@ end
 if max([heiM, widM] ~= [hei, wid])
     assert(heiM==128 && widM==64, ' Something''s wrong, body-part masks are not same size as padded image, nor are they 128x64 size.')
     resizedImage = imresize(paddedImage,[heiM,widM]);
+else
+    resizedImage = paddedImage;
 end
 
 
