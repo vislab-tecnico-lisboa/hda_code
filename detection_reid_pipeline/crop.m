@@ -93,7 +93,7 @@ for testCamera = testCameras
     MatToSave = zeros(size(DetMat,1),size(DetMat,2)+2);
     for imageNumber = 0 : nImages-1
         if (round(imageNumber/dividerWaitbar)==imageNumber/dividerWaitbar) % Limiting the access to waitbar
-            waitbar(imageNumber/nImages, wbr, ['Cropping on camera ' int2str(testCamera) ', image frame ' int2str(imageNumber) '/' int2str(nImages)]);
+            waitbar(imageNumber/nImages, wbr, ['Cropping on camera ' int2str(testCamera) ', frame ' int2str(imageNumber) '/' int2str(nImages)]);
         end
         
         %select detections relative to this frame
