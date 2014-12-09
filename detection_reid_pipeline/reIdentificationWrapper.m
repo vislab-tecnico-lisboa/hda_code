@@ -59,15 +59,15 @@ function reIdentificationWrapper()
             %eval(reIdentifierName)
             
             allRMatToSave = zeros(nFiles,6+nPed);
-            allRMatToSave(:,1:6) = filteredCropsMat(:,1:6);
-            allRMatToSave(:,7:end) = rankedList'; 
+            allRMatToSave(logical(filteredCropsMat(:,7)),1:6) = filteredCropsMat(logical(filteredCropsMat(:,7)),1:6);
+            allRMatToSave(logical(filteredCropsMat(:,7)),7:end) = rankedList'; 
         else
             % Regular case, re-identifier takes one test sample and outputs one
             % classification vector
-            wbr = waitbar(0, ['ReIdentifying on camera ' int2str(testCamera) ', image 0/' int2str(nFiles)]);
+            wbr = waitbar(0, ['RE-ID on camera ' int2str(testCamera) ', image 0/' int2str(nFiles)]);
             allRMatToSave = zeros(nFiles,6+nPed);
             for count=1:nFiles
-                waitbar(count/nFiles, wbr, ['ReIdentifying on camera ' int2str(testCamera) ', image ' int2str(count) '/' int2str(nFiles)]);
+                waitbar(count/nFiles, wbr, ['RE-ID on camera ' int2str(testCamera) ', image ' int2str(count) '/' int2str(nFiles)]);
                 dataLine = filteredCropsMat(count,:);
                 if dataLine(7) == 0    % if "active" bit turned off
                     continue,          % leave line in matrix empty
