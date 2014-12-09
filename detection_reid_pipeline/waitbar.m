@@ -50,8 +50,16 @@ function h = waitbar(X,varargin)
     end
 
 % 2 - BUILD/UPDATE THE MESSAGE BAR
-    if  isempty(h) || ~ishandle(h(1)); h = buildwaitbar(X,message);       
-    else updatewaitbar(h,X,message); end     
+    if  isempty(h) || ~ishandle(h(1));
+        try
+            h = buildwaitbar(X,message);       
+        catch me
+            warning([me.message '. Retrying...'])
+            h = buildwaitbar(X,message);       
+        end
+    else
+        updatewaitbar(h,X,message); 
+    end
 
 %--------------------------------------------------------------------------
 % SUBFUNCTION: buildwaitbar
