@@ -17,8 +17,14 @@ if ~exist('unlabeled','var'), unlabeled = ''; end % Backwards compatibility
 if ~exist('normalizationType','var') % to normalize Fmatrix{} in normalize_feat.m
     normalizationType = 'allSumTo1';
 end
-% oldbGsfilepath = [bGsPath 'bGs_' expNum feat type kernelType '_s=' sstr unlabeled 'N' normalizationType '.mat'];
-bGsfilepath = [bGsPath 'bGs_' experimentVersion '.mat'];
+
+oldbGsfilepath = [bGsPath 'bGs_' experimentVersion '.mat'];
+bGsfilepath = [bGsPath '/bGs_' experimentVersion '.mat'];
+if exist(oldbGsfilepath,'file')
+    movefile(oldbGsfilepath,bGsfilepath)
+    warning(['Moving file: ' oldbGsfilepath ' to ' bGsfilepath])
+end
+
 
 % % Backwards compatibility - adding the 'eq(4 Parts)' to the file names
 % if ~exist(bGsfilepath, 'file') && exist(oldbGsfilepath, 'file')
