@@ -20,11 +20,11 @@ declareGlobalVariables,
 %     end
 
 for testCamera = testCameras
-    if ~useMutualOverlapFilter
-        displayString = ['Setting active flag to 1 on camera ' int2str(testCamera)];
-    else
+    %if ~useMutualOverlapFilter
+    %    displayString = ['Setting active flag to 1 on camera ' int2str(testCamera)];
+    %else
         displayString = ['Filtering on camera ' int2str(testCamera) ];
-    end
+    %end
     display([displayString ' ']),
     
     cropsDirectory = sprintf('%s/camera%02d/Crops',experimentDataDirectory,testCamera);
@@ -48,7 +48,15 @@ for testCamera = testCameras
     fprintf(fid,'Format: \n');
     fprintf(fid,'camera#, frame#, x0, y0, width, height, active\n');
     fclose(fid);
-    
+
+    % To filter out test samples which the corresponding pedestrians
+    % are not in the training set
+    trainingDataStructure = createTrainStructure(0);
+    unique_trainStruct_Pid = unique([trainingDataStructure.personId]);
+    allDplusGT = GTandDetMatcher('detections');
+    unique_testSamples_personIds = unique(allDplusGT(:,3));
+    pIdofTestNotInTrain = setdiff(unique_testSamples_personIds,[unique_trainStruct_Pid 999]);
+
     cropsMat = dlmread([cropsDirectory '/allC.txt']);
     nFiles=size(cropsMat,1);
     wbr = waitbar(0, [displayString ', image 0/' int2str(nFiles)]);
@@ -87,6 +95,13 @@ for testCamera = testCameras
         %    active = 0;
         %end
         
+        % Filtering out test samples which the corresponding pedestrians
+        % are not in the training set
+        pedID = allDplusGT(count,3);
+        if max(pedID == pIdofTestNotInTrain)
+            active = 0;
+        end
+                
         MatToSave(count,:) = [dataLine(1:6), active];
         
     end
