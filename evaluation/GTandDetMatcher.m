@@ -26,11 +26,11 @@ function allGMatToSave = GTandDetMatcher(mode)
             delete([reIdsAndGtDirectory '/allG.txt']);
             warning('on','MATLAB:DELETE:FileNotFound')
         end
-        %if exist([reIdsAndGtDirectory '/allG.txt'],'file')
-        %    cprintf('blue',['allG.txt already exists at ' reIdsAndGtDirectory '\n']),
-        %    % TODO? MAYBE DLMREAD HERE TO PRODUCE OUTPUT?
-        %    continue,
-        %end
+        if exist([reIdsAndGtDirectory '/allG.txt'],'file')
+           cprintf('blue',['allG.txt already exists at ' reIdsAndGtDirectory '\n']),
+           allGMatToSave = dlmread([reIdsAndGtDirectory '/allG.txt']);
+           continue,
+        end
         fid = fopen([reIdsAndGtDirectory '/info.txt'],'w');
         fprintf(fid,'Ground Truth ID and list of estimated ID''s for each crop, sorted according to rank.\n');
         fprintf(fid,'Format: \n');
@@ -49,15 +49,15 @@ function allGMatToSave = GTandDetMatcher(mode)
         end
         nReIds=size(reIdsMat,1);
         %Work on one detectition file at a time
-        wbr = waitbar(0, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image 0/' int2str(nReIds)]);
-        dividerWaitbar=10^(floor(log10(nReIds))-1); % Limiting the access to waitbar
+        %wbr = waitbar(0, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image 0/' int2str(nReIds)]);
+        %dividerWaitbar=10^(floor(log10(nReIds))-1); % Limiting the access to waitbar
         % reIdsMat has         : camera#, frame#, x0, y0, width, height, ranked-list 
         % allG supposed to have: camera#, frame#, realId, ranked-list
         allGMatToSave = zeros(nReIds,size(reIdsMat,2)-3);
         for image=1:nReIds
-            if (round(image/dividerWaitbar)==image/dividerWaitbar) % Limiting the access to waitbar
-                waitbar(image/nReIds, wbr, ['gtAndDetMatcher on camera ' int2str(testCamera) ', image ' int2str(image) '/' int2str(nReIds)]);
-            end
+            %if (round(image/dividerWaitbar)==image/dividerWaitbar) % Limiting the access to waitbar
+            %    waitbar(image/nReIds, wbr, ['GT Matching on cam ' int2str(testCamera) ', img ' int2str(image) '/' int2str(nReIds)]);
+            %end
             dataLine = reIdsMat(image,:);
             if min(dataLine==zeros(size(dataLine))) % if line is "empty" (all zeros) 
                 continue,
@@ -86,7 +86,7 @@ function allGMatToSave = GTandDetMatcher(mode)
             allGMatToSave(image,:) = [dataLine(1),dataLine(2),label,dataLine(7:end)];
             
         end
-        close(wbr);
+        %close(wbr);
         
         if strcmp(mode,'normal')
             dlmwrite([reIdsAndGtDirectory '/allG.txt'],allGMatToSave);
