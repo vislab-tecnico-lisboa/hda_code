@@ -244,104 +244,80 @@ end
 return
 
 %% Debug: inspect all FPs
-% allFPs = dlmread([FPclassDirectory '/allFP.txt']);
-% seqFilesDirectory = [hdaRootDirectory '/hda_image_sequences_matlab'];
-% trainCamera=60;
-% localDetectionsDirectory = [thisDetectorDetectionsDirectory sprintf('/camera%02d',trainCamera) '/Detections'];
-% DetMat=dlmread([localDetectionsDirectory '/allD.txt']);
-% %Set up image reading stuff
-% seqName = sprintf('%s/camera%02d.seq',seqFilesDirectory, trainCamera); %MATTEO TODO CHANGE CAM TO CAMERA
-% seqReader = seqIo( seqName, 'reader'); % Open the input image sequence
-%
-% thisCameraFPsInd = allFPs(:,1) == trainCamera;
-% thisCameraFPs = allFPs(thisCameraFPsInd,:);
-% numFPs = size(thisCameraFPs,1);
-%
+allFPs = dlmread([FPclassDirectory '/allFP.txt']);
+seqFilesDirectory = [hdaRootDirectory '/hda_image_sequences_matlab'];
+trainCamera=17;
+localDetectionsDirectory = [thisDetectorDetectionsDirectory sprintf('/camera%02d',trainCamera) '/Detections'];
+DetMat=dlmread([localDetectionsDirectory '/allD.txt']);
+%Set up image reading stuff
+seqName = sprintf('%s/camera%02d.seq',seqFilesDirectory, trainCamera); %MATTEO TODO CHANGE CAM TO CAMERA
+seqReader = seqIo( seqName, 'reader'); % Open the input image sequence
+
+thisCameraFPsInd = allFPs(:,1) == trainCamera;
+thisCameraFPs = allFPs(thisCameraFPsInd,:);
+numFPs = size(thisCameraFPs,1);
+
+% Show all detections
 % figure('name', ['Camera ' int2str(trainCamera)]),
-% for deti=649:size(DetMat,1)
-%     det = DetMat(deti,:);
-%     frame = det(2);
-%     seqReader.seek(frame);
-%     image = seqReader.getframe();
-%     imshow(image),
-%     hold on,
-%     rectangle('Position',det(3:end-1),'EdgeColor','r')
-%     hold off,
-%     title(['Frame ' int2str(frame)])
+for deti=649:size(DetMat,1)
+    det = DetMat(deti,:);
+    frame = det(2);
+    seqReader.seek(frame);
+    image = seqReader.getframe();
+    % imshow(image),
+    showFrameAndBBs(det(1),frame);
+    hold on,
+    rectangle('Position',det(3:end-1),'EdgeColor','b')
+    hold off,
+    title(['Frame ' int2str(frame)])
+  
 %     waitforbuttonpress,
-% end
-%
-% % Show all FPs
-% for FPi=1:size(thisCameraFPs,1)
-%     FP = thisCameraFPs(FPi,3:end);
-%     frame = thisCameraFPs(FPi,2);
-%             %Write cropped images and text files with information
-%             %Get the image associated with the detection
-%             hOuter  = FP(4) * 1;%(128/96); 1 means no border
-%             wOuter  = hOuter * 0.4062;
-%             uMiddle = FP(1) + FP(3)/2; %xMiddle = x0+width/2
-%             u0      = round(uMiddle - wOuter/2);
-%             u1      = round(uMiddle + wOuter/2);
-%             vMiddle = FP(2) + FP(4)/2; %xMiddle = x0+width/2
-%             v0      = round(vMiddle - hOuter/2);
-%             v1      = round(vMiddle + hOuter/2);
-%             leftPad   = 0;
-%             rightPad  = 0;
-%             bottomPad = 0;
-%             topPad    = 0;
-%             if(u0<1)
-%                 leftPad = 1 - u0;
-%                 u0      = 1;
-%             end
-%             if(u1>nCols)
-%                 rightPad = u1 - nCols;
-%                 u1       = nCols;
-%             end
-%             if(v0<1)
-%                 topPad = 1 - v0;
-%                 v0      = 1;
-%             end
-%             if(v1>nRows)
-%                 bottomPad = v1 - nRows;
-%                 v1       = nRows;
-%             end
-%     % DEBUG show images
-%     seqReader.seek(frame);
-%     image = seqReader.getframe();
-%     figure(1),imagesc(image);
-%     hold on,
-%     rectangle('Position', [u0 v0 u1-u0 v1-v0], 'EdgeColor','r','LineWidth',5),
-%     title(['Frame ' int2str(frame)])
-%     hold off,
-%     waitforbuttonpress,
-% end
-
-function [match cost] = computeBbMatch( r1, r2, threshold)
-% r = [u0, v0, width, height]
-% threshold should be a value between 0 and 1, typically 0.5
-
-%Do r1 and r2 intersect? Check if you can define a rectangle which is the intersection of the two.
-u0Int = max( r1(2), r2(2) ); %rightmost left edge
-v0Int = max( r1(1), r2(1) ); %lower top edge
-u1Int = min( r1(2) + r1(4), r2(2) +r2(4) ); %leftmost right edge
-v1Int = min( r1(1) + r1(3), r2(1) +r2(3) ); %upper bottom edge
-
-if( ( u0Int < u1Int ) && ( v0Int < v1Int ) ) %YES, intersection
-    overlapArea = (u1Int - u0Int) * (v1Int - v0Int);
-    unionArea = r1(3)*r1(4) + r2(3)*r2(4) - overlapArea;
-    if( (overlapArea/unionArea) >= threshold)
-        match = true;
-        cost  = (unionArea-overlapArea)/unionArea; %Encodes how bad the match is. NonOverlap/Union.
-    else
-        match = false;
-        cost  = inf;
-    end
-else
-    overlapArea = 0;
-    match = false;
-    cost  = inf;
 end
 
-return
+% Show all FPs
+for FPi=1:size(thisCameraFPs,1)
+    FP = thisCameraFPs(FPi,3:end);
+    frame = thisCameraFPs(FPi,2);
+            %Write cropped images and text files with information
+            %Get the image associated with the detection
+            hOuter  = FP(4) * 1;%(128/96); 1 means no border
+            wOuter  = hOuter * 0.4062;
+            uMiddle = FP(1) + FP(3)/2; %xMiddle = x0+width/2
+            u0      = round(uMiddle - wOuter/2);
+            u1      = round(uMiddle + wOuter/2);
+            vMiddle = FP(2) + FP(4)/2; %xMiddle = x0+width/2
+            v0      = round(vMiddle - hOuter/2);
+            v1      = round(vMiddle + hOuter/2);
+            leftPad   = 0;
+            rightPad  = 0;
+            bottomPad = 0;
+            topPad    = 0;
+            if(u0<1)
+                leftPad = 1 - u0;
+                u0      = 1;
+            end
+            if(u1>nCols)
+                rightPad = u1 - nCols;
+                u1       = nCols;
+            end
+            if(v0<1)
+                topPad = 1 - v0;
+                v0      = 1;
+            end
+            if(v1>nRows)
+                bottomPad = v1 - nRows;
+                v1       = nRows;
+            end
+    % DEBUG show images
+    seqReader.seek(frame);
+    image = seqReader.getframe();
+    figure(1),imagesc(image);
+    hold on,
+    rectangle('Position', [u0 v0 u1-u0 v1-v0], 'EdgeColor','r','LineWidth',5),
+    title(['Frame ' int2str(frame)])
+    hold off,
+    waitforbuttonpress,
+end
+
 
 
