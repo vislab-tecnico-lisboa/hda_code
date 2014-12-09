@@ -17,7 +17,7 @@ seqReader.seek(frame);
 image = seqReader.getframe();
 seqReader.close(); 
 
-figure(1),imshow(image);
+figure(2356),imshow(image);
 
 %Select the GT data for this image
 gt=GTMat.objLists{1,frame+1};
