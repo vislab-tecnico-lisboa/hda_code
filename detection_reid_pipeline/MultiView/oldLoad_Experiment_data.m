@@ -34,7 +34,7 @@ for mIt = 1:m
     F = [lstack{mIt}, ustack{mIt}]';
     AllFMatrixMviews{1,mIt} = F;
 end
-warning(['TODO: CHECK IF F (' int2str(size(F)) ') IS SUPPOSED TO BE TRANSPOSE OR SOMETHING'])
+% warning(['TODO: CHECK IF F (' int2str(size(F)) ') IS SUPPOSED TO BE TRANSPOSE OR SOMETHING'])
 
 %%
 numClasses = P;
