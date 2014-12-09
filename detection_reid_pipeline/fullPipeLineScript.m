@@ -54,29 +54,38 @@ Verify_existance_of_detections_and_create_experiment_folders,
 
 %% Pipe-line computation proper
 
-if useFalsePositiveClass
-    % Crops detections that don't match any Ground-Truth Bounding Box in
-    % all the train cameras.
-    FPClassCreator(),
+% Average all test camera samples case
+if isempty(trainCameras) && isempty(testCameras)
+    % Run one experiment per test camera with all the
+    % other cameras as train, for all test cameras. Then, concatenate all
+    % the sample results and compute a global CMC
+    [trainingDataStructure, allTrainingDataStructure] = createTrainStructure(0);
+    pedNum = length(unique([allTrainingDataStructure.personId]));
+
+    cameras = [17 18 19 40 50 53 54 56 57 58 59 60];
+    allGs = [];
+    for irun = 1:length(cameras)
+        testCameras = cameras(irun);
+        trainCameras = cameras(cameras ~= testCameras);
+        
+        pipelineComputationProper,
+        if size(allG,2) < pedNum+3
+            % making the allG matrixes the same size for concatenation
+            allG(1,pedNum+3) = 0;
+        end
+        allGs = [allGs; allG];
+        
+        %evaluatorCMC(),
+    end        
+    evaluatorCMC('all',allGs)
+
+    
+% Only one test camera case    
+else
+    % Plot one CMC per test camera specified, assume training cameras don't
+    % overlap with test cameras specified.
+    pipelineComputationProper,
+
+    evaluationProper,
+    
 end
-
-% Crops detections from video images of test camera
-crop();
-
-% Filters out the occluded pedestrians
-filterOccluded();
-
-% Re-identification proper
-reIdentificationWrapper();
-
-% Matches the re-identified detections with the Ground Truth for evaluation
-GTandDetMatcher();
-
-% Evaluates and plots a CMC curve
-evaluatorCMC();
-
-% Evaluates and plots a Precision-Recall curve
-evaluatorPrecisionRecall();
-
-
-return

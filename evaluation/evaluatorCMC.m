@@ -1,4 +1,4 @@
-function evaluatorCMC(mode)
+function evaluatorCMC(mode, allGs)
 %evaluatorCMC Create and plot a CMC curve.
 % 
 %   evaluatorCMC() plots CMC curves with color and style of paper (thick
@@ -34,25 +34,33 @@ end
 
 declareGlobalVariables,
 
-trainingDataStructure = createTrainStructure(0);
-unique_trainStruct_Pid = unique([trainingDataStructure.personId]);
+[trainingDataStructure, allTrainingDataStructure] = createTrainStructure(0);
+if strcmp(mode,'all')
+    unique_trainStruct_Pid = unique([allTrainingDataStructure.personId]);
+else
+    unique_trainStruct_Pid = unique([trainingDataStructure.personId]);
+end
 
 for testCamera = testCameras
     % Filter out test camera from training data structure
     % No need anymore, using trainCameras list to create the structure
     % trainDataStructNoTestCamera = trainingDataStructure([trainingDataStructure.camera] ~= testCamera);
     
-    reIdsAndGtDirectory = [experimentDataDirectory sprintf('/camera%02d',testCamera) '/ReIdsAndGT_' reIdentifierName ];
+    if strcmp(mode,'all')
+        reIdsAndGtMat = allGs;
+    else
+        reIdsAndGtDirectory = [experimentDataDirectory sprintf('/camera%02d',testCamera) '/ReIdsAndGT_' reIdentifierName ];
+        reIdsAndGtMat = dlmread([reIdsAndGtDirectory '/allG.txt']);
+        assert(min(reIdsAndGtMat(:,1)==testCamera + reIdsAndGtMat(:,1)==0),['This allG has samples not from this camera (' int2str(testCamera) ')?? Wtf?'])
+    end
     
-    reIdsAndGtMat = dlmread([reIdsAndGtDirectory '/allG.txt']);
-    assert(min(reIdsAndGtMat(:,1)==testCamera + reIdsAndGtMat(:,1)==0),['This allG has samples not from this camera (' int2str(testCamera) ')?? Wtf?'])
     
     unique_testSamples_personIds = unique(reIdsAndGtMat(:,3));
     
     pIdofTestNotInTrain = setdiff(unique_testSamples_personIds,[unique_trainStruct_Pid 999]);
     
     % To plot Cumulative Matching Characteristic curve
-    CM = zeros(1,length(unique([trainingDataStructure.personId])));
+    CM = zeros(1,length(unique_trainStruct_Pid));
     FPs = 0;
     for testSampleI = 1:size(reIdsAndGtMat,1)
         testSample = reIdsAndGtMat(testSampleI,:);
@@ -66,9 +74,18 @@ for testCamera = testCameras
         if ~isempty(correctMatchRank)
             CM(correctMatchRank) = CM(correctMatchRank)+1;
         elseif max(GTid == pIdofTestNotInTrain)
+            error('Test peds not in the training set of it''s training cameras should have been filtered in filterOccluded')
             % pedestrian that only appears in this test camera (ergo
-            % not in current training set)
+            % not in current training set and should be ignored)
         else
+            %if strcmp(mode,'all')
+            %    if strcmp(detectorName,'AcfInria')
+            %        error('with  FP this is not enough'),
+            %    end
+            %    % if on the 'all' mode there are test samples that are not in
+            %    % the training set of that camera, and so should be ignored
+            %    continue,
+            %end
             % False positive without a False Positive class
             FPs = FPs + 1;
         end
@@ -139,7 +156,7 @@ if strcmp(mode,'default')
     title([reIdentifierName ' re-identifier CMC'])
     set(eh,'DisplayName',legendStr);
     
-elseif strcmp(mode,'repository')
+elseif strcmp(mode,'repository') || strcmp(mode,'all')
     % Choose a color and style for your algorithm results in the public
     % repository http://vislab.isr.ist.utl.pt/repository-of-results/
     
@@ -165,11 +182,15 @@ elseif strcmp(mode,'repository')
         set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) SDALF [3]']);
         set(eh,'linestyle','-');
         set(eh,'Color','b');
+    elseif strcmp(reIdentifierName, 'MultiViewold_BVT_HSV_Lab_MR8_LBP')
+        set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) MultiView [4]']);
+        set(eh,'linestyle','--');
+        set(eh,'Color',[1 0.5 0.5]);
     end
     hold off,    
     
     Path_for_images = [experimentDataDirectory sprintf('/camera%02d', testCamera) ];
-    set(gcf,'color','w'); export_fig('-painters','-r150','-q101',[Path_for_images '/' legendStr '.png'])
+    set(gcf,'color','w'); export_fig('-painters','-r150','-q101',[Path_for_images '/' 	 '.png'])
     saveas(gcf,[Path_for_images '/' legendStr], 'fig')
     
     open([hdaRootDirectory '/hda_code/Repository of Results/' legendStr '.fig'])
