@@ -28,19 +28,19 @@ C = sparse(1/m * repmat(Ck, 1,m));
 
 % thisped=ped(1,:); % used for Y_gt and Ymatrix
 
-allGT = GTandDetMatcher('detections');
-testPersonIDs = allGT(:,3)';
+%allGT = GTandDetMatcher('detections');
+%testPersonIDs = allGT(:,3)';
 trainPersonIDs = [trainingDataStructure.personId];
 linearTrainIDs = zeros(size(trainPersonIDs));
-linearTestIDs = zeros(size(testPersonIDs));
+%linearTestIDs = zeros(size(testPersonIDs));
 for p_i = 1:length(unique_trainSpid)
     linearTrainIDs(trainPersonIDs == unique_trainSpid(p_i)) = p_i;
-    linearTestIDs(testPersonIDs == unique_trainSpid(p_i)) = p_i;
+    %linearTestIDs(testPersonIDs == unique_trainSpid(p_i)) = p_i;
 end
 % YGT = linearTestIDs; % labels of the testing samples
 
 % size, P x l+u
-Y_gt = labels2vec([linearTrainIDs, linearTestIDs],P); 
+%Y_gt = labels2vec([linearTrainIDs, linearTestIDs],P); 
 Ymatrix = zeros(P,numSamples);
 Ymatrix(:,1:l) = labels2vec([linearTrainIDs],P); 
 
