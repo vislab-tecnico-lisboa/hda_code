@@ -3,8 +3,10 @@ function dist1toAllTxPatch = CompareEpitext_1toAll(Blob,trainingBlobs)
 % 
 % 
 
-assert(max(size(Blob) ~= [3 1]), 'Input must be in this way. Transpose it or something')
-assert(size(trainingBlobs,1) ~= 3, 'Input must be in this way. Transpose it or something')
+% assert(max(size(Blob) ~= [3 1]), 'Input must be in this way. Transpose it or something')
+% assert(size(trainingBlobs,1) ~= 3, 'Input must be in this way. Transpose it or something')
+assert(min(size(Blob) == [3 1]), 'Input must be in this way. Transpose it or something')
+assert(size(trainingBlobs,1) == 3, 'Input must be in this way. Transpose it or something')
 
 max_txpatch  = [Blob trainingBlobs]';
 
