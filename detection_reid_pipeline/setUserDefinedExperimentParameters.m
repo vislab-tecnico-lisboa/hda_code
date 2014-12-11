@@ -84,7 +84,7 @@ elseif strcmp(experimentVersion,'Toy3_BVT')
 
 % A bit tougher toy dataset with 4 people, and two training and two
 % testing image each. 
-elseif strcmp(experimentVersion,'Toy3_BVT')
+elseif strcmp(experimentVersion,'Toy8_BVT')
     trainCameras  = [17 18 19 40 50 53 54 56 57 58 59]; 
     testCameras = [60]; 
     detectorName = 'Toy8';
