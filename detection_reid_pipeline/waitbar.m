@@ -58,7 +58,12 @@ function h = waitbar(X,varargin)
             h = buildwaitbar(X,message);       
         end
     else
-        updatewaitbar(h,X,message); 
+        try
+            updatewaitbar(h,X,message);
+        catch me
+            warning([me.message '. Retrying...'])
+            updatewaitbar(h,X,message);
+        end
     end
 
 %--------------------------------------------------------------------------
