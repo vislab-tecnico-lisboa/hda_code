@@ -37,48 +37,16 @@ if recomputeAllCachedInformation
 end
 
 clear medianSigmas,
-clear bGs bG,
-% if exist(bGsfilepath, 'file')
-%     %load(bGsfilepath, 'bGs')
-%     load(bGsfilepath, 'bGs','medianSigmas')
-%     if ~exist('bGs', 'var')
-%         warning(['no bGs inside ' bGsfilepath '... deleting it.'])
-%         delete(bGsfilepath)
-%     else
-% 
-%         % Backwards compatibility - compute medianSigmas if not yet
-%         if ~exist('medianSigmas','var') || isempty(medianSigmas)
-%             cprintf(-[1,0,1],'medianSigmas not computed yet, computing and saving..\n');
-%             for nRun = 1:1 % 1 % 1 loaded from partition mat file
-%                 for mIt=1:m
-%                     Fmatrix{mIt,1}=AllFMatrixMviews{nRun,mIt,1};
-%                     % Set the custom kernelType for each view
-%                     run SetCustomKernelForEachView,
-%                 end
-% 
-%                 run ComputeMedianSigmas,
-%                 medianSigmas(:,nRun) = medianS;
-%             end % computing the median sigmas
-%             save(bGsfilepath, 'bGs', 'medianSigmas')
-%         end        
-% 
-%         cprintf('hyper','Loaded bGs and medianSigmas from')
-%         display([' ' bGsfilepath])
-%         % info(bGs)
-%     end
-% end
-    
-% if ~exist('bGs', 'var')
+clear bGs,
+if ~exist(bGsfilepath, 'file')
     %% Cell to ease "Run bGs anyway"
-% No longer using bGs, just one bG    
-%     try % allocate bGs matrix, if too large for memmory, try use sparse()
-%         bGs = zeros(m*(u+l),m*(u+l),1);
-%     catch me
-%         cprintf('error', [me.message ' allocating bGs.'])
-%         cprintf(' Using sparse\n')
-% %         bGs = spalloc(m*(u+l),m*(u+l),nzmax);
-%         bGs = sparse(m*(u+l),m*(u+l),1);
-%     end
+    try % allocate bGs matrix, if too large for memmory, try use sparse()
+        bGs = zeros(m*(u+l),m*(u+l),1);
+    catch me
+        cprintf('error', [me.message ' allocating bGs.'])
+        cprintf(' Using sparse\n')
+        bGs = sparse(m*(u+l),m*(u+l),1);
+    end
     for nRun = 1:1 % 1 % 1 loaded from partition mat file
         for mIt=1:m
             Fmatrix{mIt,1}=AllFMatrixMviews{nRun,mIt,1};
@@ -94,7 +62,7 @@ clear bGs bG,
         medianSigmas(:,nRun) = medianS;
     %end %DEBUG computing the median
         run NormalizeF_ComputebG,
-        % bGs(:,:,nRun) = bG;
+        bGs(:,:,nRun) = bG;
         
         % Verify that bG's are meaningful
         for mIt=1:m
@@ -115,20 +83,41 @@ clear bGs bG,
             % we're at it
             % assert(isposdef(bGm), ['Kernel matrix for view ' int2str(mIt) ' NOT positive definite!! :O'])
             if ~isposdef(bGm),
-                cprintf('err',['ComputeSaveLoad_bGs.m: Kernel matrix for view ' int2str(mIt) ' NOT positive definite!! :O\n'])
+                cprintf('err',['Kernel matrix for view ' int2str(mIt) ' NOT positive definite!! :O\n'])
             end
         end
-%     end
+    end
     
-    % save(bGsfilepath, 'bGs', 'medianSigmas')
-%     rabo = load(bGsfilepath, 'bGs','medianSigmas')
-    
-%     cprintf('_red','Saved bGs to')
-%     display([' ' bGsfilepath])
+    save(bGsfilepath, 'bGs', 'medianSigmas')
+    cprintf('_red','Saved bGs to')
+    display([' ' bGsfilepath])
     % save(bGsfilepath, 'bGs', '-v7.3')
     
     % DEBUG
     % fprintf('saved THIS bGs '), size(bGs)
     
+else
+    %load(bGsfilepath, 'bGs')
+    load(bGsfilepath, 'bGs','medianSigmas')
+    
+    % Backwards compatibility - compute medianSigmas if not yet
+    if ~exist('medianSigmas','var') || isempty(medianSigmas)
+        cprintf(-[1,0,1],'medianSigmas not computed yet, computing and saving..\n');
+        for nRun = 1:1 % 1 % 1 loaded from partition mat file
+            for mIt=1:m
+                Fmatrix{mIt,1}=AllFMatrixMviews{nRun,mIt,1};
+                % Set the custom kernelType for each view
+                run SetCustomKernelForEachView,
+            end
+
+            run ComputeMedianSigmas,
+            medianSigmas(:,nRun) = medianS;
+        end % computing the median sigmas
+        save(bGsfilepath, 'bGs', 'medianSigmas')
+    end        
+    
+    cprintf('hyper','Loaded bGs and medianSigmas from')
+    display([' ' bGsfilepath])
+    % info(bGs)
 end
 
