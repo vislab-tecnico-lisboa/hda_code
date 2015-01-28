@@ -44,14 +44,14 @@ for mit=1:m
     hasmeaning = median(bGm(:)) > eps && abs(median(bGm(:))-1) > eps; 
     % assert(hasmeaning, ['this sigma' int2str(mit) '=' num2str(s(mit)) ' makes the kernel matrix meaningless (either identity, or all-ones)'])
     if ~hasmeaning
-        cprintf('err',['this sigma' int2str(mit) '=' num2str(s(mit)) ' makes the kernel matrix meaningless (either identity, or all-ones)'])
+        cprintf('err',['Change_bG_sigmas.m: this sigma' int2str(mit) '=' num2str(s(mit)) ' makes the kernel matrix meaningless (either identity, or all-ones)'])
     end
 
     % Confirm that each view's kernel matrix is positive definite while
     % we're at it
     % assert(isposdef(bGm), ['Kernel matrix for view ' int2str(mIt) ' NOT positive definite!! :O'])
-    if ~isposdef(bGm) || ~hasmeaning
-        cprintf('err',['Kernel matrix for view ' int2str(mit) ' in run ' int2str(nRun) ' NOT positive definite (or meaningless)!! :O\n'])
+    if ~isposdef(bGm)
+        cprintf('err',['Change_bG_sigmas.m: Kernel matrix for view ' int2str(mit) ' in run ' int2str(nRun) ' NOT positive definite!! :O\n'])
         notPosDef = 1; % checked in test_BruteForceInputs.m
     else
 %         notPosDef = 0;
