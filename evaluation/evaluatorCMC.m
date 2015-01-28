@@ -1,4 +1,4 @@
-function evaluatorCMC(mode, allGs)
+function CMC = evaluatorCMC(mode, allGs)
 %evaluatorCMC Create and plot a CMC curve.
 % 
 %   evaluatorCMC() plots CMC curves with color and style of paper (thick
@@ -32,7 +32,7 @@ end
 % those, historically, have been removed. But 999 should not be removed if
 % there is no FP class.
 
-declareGlobalVariables,
+declareGlobalVariables, % uses testCameras
 
 [trainingDataStructure, allTrainingDataStructure] = createTrainStructure(0);
 if strcmp(mode,'all')
@@ -133,14 +133,17 @@ elseif useMutualOverlapFilter && useFalsePositiveClass
     linestyle= '-.';
     legendStr = ['FP ON, OCC ON'];
 end
-legendStr = [legendStr ' cam' int2str(testCamera)];
-
+if strcmp(mode,'all')
+    legendStr = [legendStr ', All cameras'];
+else
+    legendStr = [legendStr ' cam' int2str(testCamera)];
+end
 
 figure(839754), hold on,
 % TODO: open here the saved figure in repository of results, so new line is
 % automatically added to figure?
 
-nAUC = sum(CMC)/length(CMC)
+nAUC = sum(CMC)/length(CMC);
 % numberActiveDetections = sum(reIdsAndGtMat(:,1)~=0);
 % legendStr = [int2str(numberActiveDetections) ' Active Detections, nAUC ' num2str(nAUC,'%.2f') ' / 1st ' num2str(CMC(1),'%.2f') '%'];
 eh = plot(CMC,linestyle,'Color',linecolor,'Linewidth',linewidth);
@@ -160,7 +163,7 @@ elseif strcmp(mode,'repository') || strcmp(mode,'all')
     % Choose a color and style for your algorithm results in the public
     % repository http://vislab.isr.ist.utl.pt/repository-of-results/
     
-    title([legendStr])
+    title(legendStr)
     
     % Substitute 'NN HSV [1]' with your desired legend string
     set(eh,'DisplayName',['[1] NN HSV (' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%)']);
@@ -175,7 +178,7 @@ elseif strcmp(mode,'repository') || strcmp(mode,'all')
         set(eh,'linestyle','-');
         set(eh,'Color','k');
     elseif strcmp(reIdentifierName, 'MSCR_NN_ReId')
-        set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) NN MSCR [2]']);
+        set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) MSCR [2]']);
         set(eh,'linestyle','--');
         set(eh,'Color','k');
     elseif strcmp(reIdentifierName, 'SDALF_ReId')
@@ -197,7 +200,7 @@ elseif strcmp(mode,'repository') || strcmp(mode,'all')
     plotedit on
 
 elseif strcmp(mode,'development')
-    title([legendStr])
+    title(legendStr)
     set(eh,'DisplayName',['(' num2str(CMC(1),'%04.1f') '% ; ' num2str(nAUC,'%0.1f') '%) ' featureExtractionName ]);
     lineStyles={'-','--','-.',':'};
     set(eh,'linestyle',lineStyles{randi(length(lineStyles))});
