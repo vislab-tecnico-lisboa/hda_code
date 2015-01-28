@@ -3,7 +3,7 @@
 % Evaluates and plots a CMC curve
 % mode = 'repository'
 % evaluatorCMC(mode);
-evaluatorCMC('development');
+evaluatorCMC('development'); % Options: 'repository' 'development'
 
 % Confusion Matrix
 % trainingDataStructure = createTrainStructure(0);
