@@ -16,7 +16,7 @@ clear results,
 xvalRuns  = 1;
 nRun = 1;
 % for nRun = 1:xvalRuns % xvalRuns % xvalRuns loaded from partition mat file
-    bG = bGs(:,:,nRun);
+    % bG = bGs(:,:,nRun);
     s = medianSigmas(:,nRun); medianSigmasUsed = 1;
     
     % Computed and saved the bGs with sigmas = 1, and now load and reset bGs to
