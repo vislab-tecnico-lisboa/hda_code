@@ -1,5 +1,5 @@
 function reIdentificationWrapper()
-%Reads filtered detections and generated ReId output 
+%% Reads filtered detections and generated ReId output 
 % TODO: MORE COMMENTS
     
 	declareGlobalVariables,
@@ -10,6 +10,7 @@ function reIdentificationWrapper()
     nPed = length(unique_trainSpid);
         
     for testCamera = testCameras
+        %% 
         fprintf('re-identification: Working on camera: %d\n',testCamera);
            
         filteredCropsDirectory = [experimentDataDirectory sprintf('/camera%02d',testCamera) '/FilteredCrops'];
@@ -40,11 +41,11 @@ function reIdentificationWrapper()
         
         % Loading pre-computed body-part masks
         bodypartmaksksDirectory      = [thisDetectorDetectionsDirectory sprintf('/camera%02d',testCamera) '/Detections'];
-        masks = load([bodypartmaksksDirectory '/pmskset4_128x64.mat']);
-        masks = masks.pmskset;
-        if size(masks,1) ~= nFiles
-            error(['Number of masks (' int2str(size(masks,1)) ') not equal to number of filtered crops (' int2str(nDetections) '). Maybe they were computed with crowd detections?'])
+        if strcmp(featureExtractionMethod, '2parts')
+            Create_2parts_body_part_masks_in_reIdentificationWrapper,
         end
+        masks = load_pre_computed_body_part_masks(bodypartmaksksDirectory,nFiles);
+
         
         if strncmp(reIdentifierName,'MultiView',9)
             % Special case: algorithms that take as input the whole test set
@@ -53,9 +54,9 @@ function reIdentificationWrapper()
             testDataStructure = createTestStructure(testCamera);
             filteredTestStruct = testDataStructure(logical(filteredCropsMat(:,7)));
 
-            % if we haved a function
+            % if we have a function
             rankedList = reIdentifierHandle(trainingDataStructure,filteredTestStruct,filteredCropsMat); % OUTPUT: rankedList
-            % if we haved a script
+            % if we have a script
             %eval(reIdentifierName)
             
             allRMatToSave = zeros(nFiles,6+nPed);
@@ -64,10 +65,14 @@ function reIdentificationWrapper()
         else
             % Regular case, re-identifier takes one test sample and outputs one
             % classification vector
-            wbr = waitbar(0, ['RE-ID on camera ' int2str(testCamera) ', image 0/' int2str(nFiles)]);
+            if waitbarverbose
+                wbr = waitbar(0, ['RE-ID on camera ' int2str(testCamera) ', det 0/' int2str(nFiles)]);
+            end
             allRMatToSave = zeros(nFiles,6+nPed);
             for count=1:nFiles
-                waitbar(count/nFiles, wbr, ['RE-ID on camera ' int2str(testCamera) ', image ' int2str(count) '/' int2str(nFiles)]);
+                if waitbarverbose
+                    waitbar(count/nFiles, wbr, ['RE-ID on camera ' int2str(testCamera) ', det ' int2str(count) '/' int2str(nFiles)]);
+                end
                 dataLine = filteredCropsMat(count,:);
                 if dataLine(7) == 0    % if "active" bit turned off
                     continue,          % leave line in matrix empty
@@ -84,6 +89,10 @@ function reIdentificationWrapper()
                 % Padding image to 2 per 1 ratio, to match the size of
                 % body-part masks
                 paddedImage = smartPadImageToBodyPartMaskSize(subImage);            
+                %                 figure(1321), imshow( paddedImage ),
+                %                 hold on
+                %                 plotBodyPartMasks(paddedImage,masks(count,:));
+                %                 hold off,
 
                 % Extracting HSV feature vector (10 bin per channel of each of
                 % the 4 parts, totaling 120x1 vector)
@@ -99,32 +108,36 @@ function reIdentificationWrapper()
                 % DEBUG VISUALIZATION
                 % VISUALIZE OFFLINE CROPPED IMAGE, ONLINE CROPPED IMAGE, PADDED
                 % IMAGE, AND BODY-PART MASKS OVERLAYED ON THE PADDED IMAGE
-                %figure(234),
-                %subplot(1,5,1)
-                %imshow(subImage),            title('Online Crop'),
-                %
-                %FXXXpng = [filteredCropsDirectory '/' sprintf('F%06d.png',count)];
-                %if exist(FXXXpng,'file')
-                %    subplot(1,4,2)
-                %    imshow(imread(FXXXpng))
-                %    title('Cropped offline')
-                %end
-                %
-                %subplot(1,5,3)
-                %imshow(paddedImage), title('Padded'),
-                %
-                %subplot(1,5,4)
-                %imshow(paddedImage), title('Masked')
-                %hold on
-                %plotBodyPartMasks(paddedImage,masks(count,:));
-                %hold off,
-                %
-                %subplot(1,5,5)
-                %bar(HSV),
+                %                 figure,
+                %                 subplot(1,2,1)
+                % %                 imshow(subImage),            title('Online Crop'),
+                % %                 
+                % %                 FXXXpng = [filteredCropsDirectory '/' sprintf('F%06d.png',count)];
+                % %                 if exist(FXXXpng,'file')
+                % %                    subplot(1,4,2)
+                % %                    imshow(imread(FXXXpng))
+                % %                    title('Cropped offline')
+                % %                 end
+                % %                 
+                % %                 subplot(1,5,3)
+                % %                 imshow(paddedImage), title('Padded'),
+                % %                 
+                %                 subplot(1,2,1)
+                %                 imshow(paddedImage), title('Masked')
+                %                 hold on
+                %                 plotBodyPartMasks(paddedImage,masks(count,:));
+                %                 hold off,
+                %                 
+                %                 subplot(1,2,2)
+                %                 bar(feature),
+                %                 waitforbuttonpress,
+                % 
                 % END DEBUG VISUALIZATION
 
             end
-            close(wbr);
+            if waitbarverbose
+                close(wbr);
+            end
         end
         
         dlmwrite([reIdsDirectory '/allR.txt'],allRMatToSave);
