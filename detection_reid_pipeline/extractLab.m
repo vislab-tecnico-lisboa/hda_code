@@ -14,7 +14,7 @@ if max([heiM, widM] ~= [hei, wid])
     %    ' Using sub-sampled masks (128x64) instead.'])
     % and Resizing masks to original image size
     clear thisMaskSet,
-    for partIt = 1:4
+    for partIt = 1:nParts
         resizedMaskSet{partIt} = imresize(maskset{partIt},[hei,wid]);
     end
 else
