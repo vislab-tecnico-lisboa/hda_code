@@ -15,6 +15,8 @@ function writeExpermentParametersTxt()
     fprintf(fid,['Re-Identifier name                          : ' reIdentifierName '\n']);    
     fprintf(fid,['Feature extraction name                     : ' featureExtractionName '\n']);    
     fprintf(fid,['Using training set                          : ' trainingSetPath '\n']);    
+    fprintf(fid,'\n');    
+    fprintf(fid,['Using featureExtractionMethod               : ' featureExtractionMethod '\n']);    
 
     fclose(fid);
 
@@ -30,4 +32,6 @@ function writeExpermentParametersTxt()
     cprintf('black',['Re-Identifier name                          : ' reIdentifierName '\n']);    
     cprintf('black',['Feature extraction name                     : ' featureExtractionName '\n']);    
     cprintf('black',['Using training set                          : ' trainingSetPath '\n']);    
+    cprintf('black',' ');    
+    cprintf('black',['Using featureExtractionMethod               : ' featureExtractionMethod '\n']);    
     cprintf('*black',['================================================================\n']);
