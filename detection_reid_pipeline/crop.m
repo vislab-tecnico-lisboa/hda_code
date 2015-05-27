@@ -88,14 +88,17 @@ for testCamera = testCameras
     %Process the images
     firstDetectionId = 0; %Points to the first detection of current image. Needed to "remember" the name of the file to write.
     imageNumber =0;
-    wbr = waitbar(0, ['Cropping on camera ' int2str(testCamera) ', image frame ' int2str(imageNumber) '/' int2str(nImages)]);
-    dividerWaitbar=10^(floor(log10(nImages))-1); % Limiting the access to waitbar
+    if waitbarverbose
+        wbr = waitbar(0, ['Cropping on camera ' int2str(testCamera) ', image frame ' int2str(imageNumber) '/' int2str(nImages)]);
+        dividerWaitbar=10^(floor(log10(nImages))-1); % Limiting the access to waitbar
+    end
     MatToSave = zeros(size(DetMat,1),size(DetMat,2)+2);
     for imageNumber = 0 : nImages-1
-        if (round(imageNumber/dividerWaitbar)==imageNumber/dividerWaitbar) % Limiting the access to waitbar
-            waitbar(imageNumber/nImages, wbr, ['Cropping on camera ' int2str(testCamera) ', frame ' int2str(imageNumber) '/' int2str(nImages)]);
+        if waitbarverbose
+            if (round(imageNumber/dividerWaitbar)==imageNumber/dividerWaitbar) % Limiting the access to waitbar
+                waitbar(imageNumber/nImages, wbr, ['Cropping on camera ' int2str(testCamera) ', frame ' int2str(imageNumber) '/' int2str(nImages)]);
+            end
         end
-        
         %select detections relative to this frame
         dets=DetMat(DetMat(:,2)==imageNumber,3:end);
         
@@ -170,7 +173,9 @@ for testCamera = testCameras
         end
         firstDetectionId = firstDetectionId + size(dets,1);
     end
-    close(wbr);
+    if waitbarverbose
+        close(wbr);
+    end
     
     dlmwrite([localCropsDirectoryForText '/allC.txt'],MatToSave);
     cprintf('*[1,0,1]',['Saved allC.txt to ' localCropsDirectoryForText '\n'])
