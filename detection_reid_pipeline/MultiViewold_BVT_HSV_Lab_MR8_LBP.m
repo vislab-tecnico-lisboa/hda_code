@@ -31,6 +31,6 @@ params_mv.c  = ones(length(viewlist),1)/length(viewlist); % uniform weighting to
 params_mv.Laplacian.GraphNormalize = 1; % parameter to compute the laplacian
 
 %% MultiView code proper
-MultiViewcodeproper_oldVersion,
-
+% MultiViewcodeproper_oldVersion,
+rankedList = MultiViewold_RepeatWrapper(lstack, ustack, params_mv, viewlist, trainingDataStructure, filteredTestStruct, filteredCropsMat);
 
