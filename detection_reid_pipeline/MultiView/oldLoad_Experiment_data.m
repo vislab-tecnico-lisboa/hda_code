@@ -25,7 +25,8 @@ DOPLOT = 1;
 unique_trainSpid = unique([trainingDataStructure.personId]);
 
 l = length(trainingDataStructure); % # labeled samples
-u = sum(filteredCropsMat(:,7));    % # unlabeled samples
+u = size(ustack{1},2);
+% feature stack is already filtered, shouldn't need this: sum(filteredCropsMat(:,7));    % # unlabeled samples
 m = length(viewlist);              % # of views
 P = length(unique_trainSpid);      % # of classes, i.e., length of the output vector
 
@@ -55,7 +56,9 @@ numSamples = u+l;
 
 assert(numSamples > numClasses, 'something is wrong'); % something is wrong otherwise
 
-display([' numSamples=' int2str(numSamples) ' P(numClasses)=' int2str(P) ...
-    ' m(views)=' int2str(m) ... 
-    ' u=' int2str(u) ' l=' int2str(l) ])
-display(' ')
+if ~exist('verbose','var') || verbose == 1
+    display([' numSamples=' int2str(numSamples) ' P(numClasses)=' int2str(P) ...
+        ' m(views)=' int2str(m) ...
+        ' u=' int2str(u) ' l=' int2str(l) ])
+    display(' ')
+end
