@@ -1,10 +1,11 @@
 
 declareGlobalVariables,
 
-testCamera = unique([filteredTestStruct.camera]);
-assert(length(testCamera)==1,'Expecting only one testCamera each time')
-
-bGsPath = [thisDetectorDetectionsDirectory '/camera' num2str(testCamera,'%02d') '/Detections'];
+% %Testing to see if filteredTestStruct is used anywhere else, because
+%currently, we aren't save/loading bGs
+% testCamera = unique([filteredTestStruct.camera]);
+% assert(length(testCamera)==1,'Expecting only one testCamera each time')
+% bGsPath = [thisDetectorDetectionsDirectory '/camera' num2str(testCamera,'%02d') '/Detections'];
 
 oldLoad_Experiment_data,
 
@@ -21,9 +22,9 @@ nRun = 1;
     
     % Computed and saved the bGs with sigmas = 1, and now load and reset bGs to
     % the desired sigmas
-    run Change_bG_sigmas,
+    Change_bG_sigmas,
 
-    run my_Optimization,
+    my_Optimization,
     
     galleryIndexes = find(Ymatrix(1,:) == 0);
 %     [CMC AUC] = auroc_reid(estimatedLabelsold(:,galleryIndexes),Y_gt(:,galleryIndexes), DONTDOPLOT);
