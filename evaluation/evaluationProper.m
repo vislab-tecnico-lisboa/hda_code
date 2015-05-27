@@ -4,6 +4,7 @@
 % mode = 'repository'
 % evaluatorCMC(mode);
 evaluatorCMC('development'); % Options: 'repository' 'development'
+% evaluatorCMC('repository'); % Options: 'repository' 'development'
 
 % Confusion Matrix
 % trainingDataStructure = createTrainStructure(0);
