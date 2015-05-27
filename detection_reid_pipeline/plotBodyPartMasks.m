@@ -10,6 +10,8 @@ function plotBodyPartMasks(paddedImage,maskset)
 % body-part.
 % If masks aren't the same size as padded image (supposedly 
 
+declareGlobalVariables,
+
 [hei,wid,chs] = size(paddedImage);
 [heiM, widM] = size(maskset{1});
 if max([heiM, widM] ~= [hei, wid])
@@ -18,29 +20,39 @@ if max([heiM, widM] ~= [hei, wid])
     %    ' Using sub-sampled masks (128x64) instead.'])
     % and Resizing masks to original image size
     clear thisMaskSet,
-    for partIt = 1:4
+    for partIt = 1:length(maskset)
         resizedMaskSet{partIt} = imresize(maskset{partIt},[hei,wid]);
     end
 else
     resizedMaskSet = maskset;
 end
 hold on,
-for partIt = 1:4
-    %B = bwboundaries(masks{count,partIt});
-    B = bwboundaries(resizedMaskSet{partIt});
-    switch partIt
-        case 1 %head
-            color = 'b';
-        case 2 %torso
-            color = 'w';
-        case 3 %thighs
-            color = 'm';
-        case 4 %fore-legs
-            color = 'r';
+if strcmp(featureExtractionMethod,'4parts')
+    for partIt = 1:4
+        %B = bwboundaries(masks{count,partIt});
+        B = bwboundaries(resizedMaskSet{partIt});
+        switch partIt
+            case 1 %head
+                color = 'b';
+            case 2 %torso
+                color = 'w';
+            case 3 %thighs
+                color = 'm';
+            case 4 %fore-legs
+                color = 'r';
+        end
+        for k = 1:length(B)
+            boundary = B{k};
+            plot(boundary(:,2), boundary(:,1), color, 'LineWidth', 3)
+        end
     end
-    for k = 1:length(B)
-        boundary = B{k};
-        plot(boundary(:,2), boundary(:,1), color, 'LineWidth', 3)
+elseif strcmp(featureExtractionMethod,'6parts')
+    for partIt = 1:6
+        B = bwboundaries(resizedMaskSet{partIt});
+        for k = 1:length(B)
+            boundary = B{k};
+            plot(boundary(:,2), boundary(:,1), 'r', 'LineWidth', 3)
+        end
     end
 end
 hold off,
