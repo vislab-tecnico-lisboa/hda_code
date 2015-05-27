@@ -28,6 +28,10 @@ dist1toAllwHSV = BhattDist1toAll(Blob.wHSV', [rabo.wHSV]');
 
 % MSCRdist1toAll = 0.4*distY + 0.6*distColor
 dist1toAll = MSCRdist1toAll' + dist1toAllwHSV;
+[M,I]=min(dist1toAll);
+assert(I == 1,'The test sample should be in the last position of the dist1toAll (concatenating the training sample features with the test sample feature, with it in the end)')
+dist1toAll = dist1toAll(2:end);
+assert(length(dist1toAll)==length(trainSpidVector),'The code below assumes dist1toAll has only the distances of the test feature to all train samples')
 
 % Compute minimum of distances for each train ped (not sample)
 nPed = length(unique_trainSpid);
