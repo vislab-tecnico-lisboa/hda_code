@@ -103,3 +103,16 @@ global offlineCrop_and_not_OnTheFlyFeatureExtraction
 % Specific experiment folder
 % experimentDataDirectory = [hdaRootDirectory '/hda_experiment_data/' detectorName '_' experimentVersion ];
 global experimentDataDirectory
+
+% Filter out test samples of a same pedestrian with bounding boxes in the
+% same position and with the same size
+global filterOutRepeatedTestSamples,
+
+% Set feature extraction method from the following choices:
+%  - 4parts (default method)
+%  - 2parts (automatic waist detection to divide full mask in two)
+%  - fullbody (merge the 4 parts into one full body mask)
+%  - 6rectangles (6 fixed horizontal stripes)
+global featureExtractionMethod,
+
+global waitbarverbose,
