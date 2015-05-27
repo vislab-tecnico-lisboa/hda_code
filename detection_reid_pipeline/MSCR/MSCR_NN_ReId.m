@@ -20,24 +20,27 @@ trainSpidVector = [trainingDataStructure.personId];
 unique_trainSpid = unique([trainingDataStructure.personId]);
 
 dist1toAll = MSCRmatch_1toall(Blob', [trainingDataStructure.feature]);
-%dist1toAllF = BhattDist1toAll(testFeatures.F(count,:), [trainingDataStructure.F]');
-% in(HSV' - testFeatures.F(count,:))
+[M,I]=min(dist1toAll);
+assert(I == 1,'The test sample should be in the first position of the dist1toAll (concatenating the training sample features with the test sample feature, with it in the end)')
+dist1toAll = dist1toAll(2:end);
+assert(length(dist1toAll)==length(trainSpidVector),'The code below assumes dist1toAll has only the distances of the test feature to all train samples')
 
 % Compute minimum of distances for each train ped (not sample)
 nPed = length(unique_trainSpid);
 dist1toPeds = zeros(1,nPed);
 dist1toPedsPIDs = zeros(1,nPed);
 for trainPed = 1:nPed
-    % indTped = trainSpidVector == dsetTrain(trainPed).pid;
-    indTped = trainSpidVector == unique_trainSpid(trainPed);
+    % Indexes of the training samples of this train ped
+    indTped = trainSpidVector == unique_trainSpid(trainPed); 
     if ~isempty(min(dist1toAll(indTped)))
+        % minimum distance from only those distances (from test sample to
+        % train samples of only this ped)
         dist1toPeds(trainPed) = min(dist1toAll(indTped));
     else
         % Since the purging, there is no instances of this ped
         dist1toPeds(trainPed) = Inf;
     end
     
-    % dist1toPedsPIDs(trainPed) = dsetTrain(trainPed).pid;
     dist1toPedsPIDs(trainPed) = unique_trainSpid(trainPed);
 end
 
