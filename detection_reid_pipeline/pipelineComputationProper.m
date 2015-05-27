@@ -1,5 +1,12 @@
 %% Pipe-line computation proper
 
+% Just to print how many active test samples per camera
+% if ~exist('rabo','var')
+%     rabo = [];
+% end
+% [ActiveTestSamples, ActiveTrainSamples, ActivePeds] = filterOccluded();
+% rabo(end+1,1:3) = [ActiveTestSamples, ActiveTrainSamples, ActivePeds];
+
 % End game:
 if ~recomputeAllCachedInformation
     reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d', testCameras) '/ReIdsAndGT_' reIdentifierName];
@@ -9,6 +16,15 @@ if ~recomputeAllCachedInformation
         return,
     end
 end
+
+% if ~recomputeAllCachedInformation && exist('cameras','var')
+%     filteredCropsDirectory = [experimentDataDirectory sprintf('/camera%02d',testCameras) '/FilteredCrops'];
+%     if exist([filteredCropsDirectory '/allF.txt'],'file')
+%         cprintf('blue',['allF.txt already exists at ' filteredCropsDirectory '\n']),
+%         cprintf('blue',['some other MATLAB must be working in this camera ' int2str(testCameras) ' right now, skipping it..\n']),
+%         return,
+%     end
+% end
 
 if useFalsePositiveClass
     % Crops detections that don't match any Ground-Truth Bounding Box in
