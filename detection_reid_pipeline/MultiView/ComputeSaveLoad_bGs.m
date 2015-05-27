@@ -6,35 +6,37 @@
 % global 1 bGs m J Mm u l C Ymatrix Y_gt P numClasses numSamples 
 % global DONTDOPLOT DOPLOT oneFineTuneRunTime
 % global manifold
-if ~exist(bGsPath,'dir'), mkdir(bGsPath), end
 
-sstr = [];
-% for sit=1:length(s)
-for sit=1:m
-   sstr = [sstr num2str(1) '_']; % Must compute bG's with sigmas = 1
-end
-if ~exist('unlabeled','var'), unlabeled = ''; end % Backwards compatibility
+% %Currently not save/loading bGs
+% % if ~exist(bGsPath,'dir'), mkdir(bGsPath), end
+% 
+% sstr = [];
+% % for sit=1:length(s)
+% for sit=1:m
+%    sstr = [sstr num2str(1) '_']; % Must compute bG's with sigmas = 1
+% end
+% if ~exist('unlabeled','var'), unlabeled = ''; end % Backwards compatibility
 if ~exist('normalizationType','var') % to normalize Fmatrix{} in normalize_feat.m
     normalizationType = 'allSumTo1';
 end
-
-oldbGsfilepath = [bGsPath 'bGs_' experimentVersion '.mat'];
-bGsfilepath = [bGsPath '/bGs_' experimentVersion '.mat'];
-if exist(oldbGsfilepath,'file')
-    movefile(oldbGsfilepath,bGsfilepath)
-    warning(['Moving file: ' oldbGsfilepath ' to ' bGsfilepath])
-end
-
-
-% % Backwards compatibility - adding the 'eq(4 Parts)' to the file names
-% if ~exist(bGsfilepath, 'file') && exist(oldbGsfilepath, 'file')
-%     movefile(oldbGsfilepath, bGsfilepath);
-%     cprintf('_green',[' -- Renamed to add ' equalize parts ' \n']);
+% 
+% oldbGsfilepath = [bGsPath 'bGs_' experimentVersion '.mat'];
+% bGsfilepath = [bGsPath '/bGs_' experimentVersion '.mat'];
+% if exist(oldbGsfilepath,'file')
+%     movefile(oldbGsfilepath,bGsfilepath)
+%     warning(['Moving file: ' oldbGsfilepath ' to ' bGsfilepath])
 % end
-
-if recomputeAllCachedInformation
-    delete(bGsfilepath),
-end
+% 
+% 
+% % % Backwards compatibility - adding the 'eq(4 Parts)' to the file names
+% % if ~exist(bGsfilepath, 'file') && exist(oldbGsfilepath, 'file')
+% %     movefile(oldbGsfilepath, bGsfilepath);
+% %     cprintf('_green',[' -- Renamed to add ' equalize parts ' \n']);
+% % end
+% 
+% if recomputeAllCachedInformation
+%     delete(bGsfilepath),
+% end
 
 clear medianSigmas,
 clear bGs bG,
@@ -90,10 +92,10 @@ clear bGs bG,
             Fmatrix{mIt,2} = kernelType;        
         end
         
-        run ComputeMedianSigmas,
+        ComputeMedianSigmas,
         medianSigmas(:,nRun) = medianS;
     %end %DEBUG computing the median
-        run NormalizeF_ComputebG,
+        NormalizeF_ComputebG,
         % bGs(:,:,nRun) = bG;
         
         % Verify that bG's are meaningful
