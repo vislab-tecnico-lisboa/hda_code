@@ -26,23 +26,34 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
             
     nameList = dir([trainingSetPath '/*.png']);
     % Loading pre-computed body-part masks
-    masks = load([trainingSetPath '/pmskset4_128x64.mat']);
-    masks = masks.pmskset;
-    if size(masks,1) ~= size(nameList,1)
-        error(['Number of masks (' int2str(size(masks,1)) ') not equal to number of training crops (' int2str(size(nameList,1)) ').'])
+    if strcmp(featureExtractionMethod, '2parts')
+        Create_2parts_body_part_masks_in_createTrainStruct,
     end
+    masks = load_pre_computed_body_part_masks(trainingSetPath,size(nameList,1));
+
         
     TrainMat=dlmread([trainingSetPath '/allT.txt']);
     cprintf('*blue',['Loaded allT.txt from ' trainingSetPath '\n'])
     
-    allTrainingDataStructure_path = [trainingSetPath '/allTrainingDataStructure_' featureExtractionName '.mat'];
+    
+    
+    allTrainingDataStructure_path = [trainingSetPath '/allTrainingDataStructure_' featureExtractionName '_' featureExtractionMethod '.mat'];
+    % Backwards compatibility
+    if strcmp(featureExtractionMethod,'4parts')
+        allTrainingDataStructure_path_old = [trainingSetPath '/allTrainingDataStructure_' featureExtractionName '.mat'];
+        if ~exist(allTrainingDataStructure_path,'file') && exist(allTrainingDataStructure_path_old,'file')
+            copyfile(allTrainingDataStructure_path_old,allTrainingDataStructure_path)
+            warning(['BACKWARDS COMPATIBILITY: Copied original allTrainingDataStructure to ' allTrainingDataStructure_path])
+        end
+    end
+        
     if recomputeAllCachedInformation && loadImages
         warning('off','MATLAB:DELETE:FileNotFound')
         delete(allTrainingDataStructure_path),
         warning('on','MATLAB:DELETE:FileNotFound')
     end
     if loadImages && exist(allTrainingDataStructure_path,'file')
-        load(allTrainingDataStructure_path),
+        load(allTrainingDataStructure_path,'allTrainingDataStructure'),
         cprintf('*blue',['Loaded allTtrainingDataStructure from ' allTrainingDataStructure_path '\n'])
         assert(isfield(allTrainingDataStructure, 'camera'))
         assert(isfield(allTrainingDataStructure, 'frame'))
@@ -50,20 +61,24 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
         %assert(isfield(allTrainingDataStructure, 'image'),'SEEMS like the cached allTraining file was saved without the images :P...')
         %assert(isfield(allTrainingDataStructure, 'mask'))
         assert(isfield(allTrainingDataStructure, 'feature'),'SEEMS like the cached allTraining file was saved without the images :P...')
-   else
+    else
         
-        dividerWaitbar=10^(floor(log10(size(TrainMat,1)))-1); % Limiting the access to waitbar
-        wbr = waitbar(0, ['Loading training data, image 0/' int2str(size(TrainMat,1))]);
+        if waitbarverbose
+            dividerWaitbar=10^(floor(log10(size(TrainMat,1)))-1); % Limiting the access to waitbar
+            wbr = waitbar(0, ['Loading training data, image 0/' int2str(size(TrainMat,1))]);
+        end
         for i=1:size(TrainMat,1)
-            if loadImages
-                % Loading images and computing features takes long enough
-                % that you don't need to limit access to waitbar
-                waitbar(i/size(TrainMat,1), wbr, ['Loading training data, image ' int2str(i) '/' int2str(size(TrainMat,1))]);
-            else
-                if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+            if waitbarverbose
+                if loadImages
+                    % Loading images and computing features takes long enough
+                    % that you don't need to limit access to waitbar
                     waitbar(i/size(TrainMat,1), wbr, ['Loading training data, image ' int2str(i) '/' int2str(size(TrainMat,1))]);
-                end
-            end                
+                else
+                    if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+                        waitbar(i/size(TrainMat,1), wbr, ['Loading training data, image ' int2str(i) '/' int2str(size(TrainMat,1))]);
+                    end
+                end                
+            end
             % trainSample = load([trainingSetPath '/' nameList(i).name]);
             trainSample = TrainMat(i,:);
             allTrainingDataStructure(i).camera      = trainSample(1);
@@ -71,7 +86,8 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
             allTrainingDataStructure(i).personId    = trainSample(3);
             % trainingDataStructure(i).fullyVisible= trainSample(4); % not useful
             if loadImages
-                % allTrainingDataStructure(i).image       = imread([trainingSetPath '/' nameList(i).name]);
+                %allTrainingDataStructure(i).image       = imread([trainingSetPath '/' nameList(i).name]);
+                %cprintf('red','createTrainStructure: loading images\n'),
                 image       = imread([trainingSetPath '/' nameList(i).name]);
                 assert( i==sscanf(nameList(i).name,'T%06d.png') , 'Bitch.. ''dir'' is not returning an ordered list of files..')
                 
@@ -79,6 +95,11 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
                 mask       = masks(i,:);
                 % imshow(trainSampleImage)
                 paddedImage = smartPadImageToBodyPartMaskSize(image);
+%                 figure(1321), imshow( paddedImage ),
+%                 hold on
+%                 plotBodyPartMasks(paddedImage,mask);
+%                 hold off,
+
                 feature = featureExtractionHandle(paddedImage,masks(i,:));
                 allTrainingDataStructure(i).feature         = feature;
                 %         % VISUALIZATION DEBUG
@@ -98,7 +119,9 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
             end
             
         end
-        close(wbr);
+        if waitbarverbose
+            close(wbr);
+        end
         
         if loadImages % time saving measure
             save(allTrainingDataStructure_path,'allTrainingDataStructure'),
@@ -139,8 +162,10 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
             assert(isfield(allFPDataStructure, 'feature'),'SEEMS like the cached allFP file was saved without the images :P...')
         else
             
-            dividerWaitbar=10^(floor(log10(size(FPMat,1)))-1); % Limiting the access to waitbar
-            wbr = waitbar(0, ['Loading FP training data, image 0/' int2str(size(FPMat,1))]);
+            if waitbarverbose
+                dividerWaitbar=10^(floor(log10(size(FPMat,1)))-1); % Limiting the access to waitbar
+                wbr = waitbar(0, ['Loading FP training data, image 0/' int2str(size(FPMat,1))]);
+            end
             for i=1:size(FPMat,1)
                 if loadImages
                     % Loading images and computing features takes long enough
@@ -202,7 +227,9 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
                     
                 end
             end
-            close(wbr);
+            if waitbarverbose
+                close(wbr);
+            end
 
             %         SAVE HERE
             if loadImages % time saving measure
@@ -226,4 +253,39 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
         trainingDataStructure = allTrainingDataStructure;
     end
     
+    
+
+    % Keep only at most maximumTrainSamples per ped, disregarding the FP
+    % class
+%     global maximumTrainSamples,
+%     if exist('maximumTrainSamples','var')
+%         ind2keepfile = [trainingSetPath 'traininigIndexes2keep maxN' int2str(maximumTrainSamples) ' cameras ' int2str(trainCameras) '.txt'];
+%         if ~exist(ind2keepfile,'file')        
+%             pidVector = [trainingDataStructure.personId];
+%             pidVector = pidVector(pidVector~=999);
+%             N = hist(pidVector,1:max(pidVector));
+%             pedsThatNeedSamplesRemoved = find(N>maximumTrainSamples);
+%             samples2beRemoved = [];
+%             for ped=pedsThatNeedSamplesRemoved
+%                 indPedSamples = find([trainingDataStructure.personId] == ped);
+% 
+%                 removeI = randperm(length(indPedSamples),length(indPedSamples)-maximumTrainSamples);
+%                 samples2beRemoved = [samples2beRemoved indPedSamples(removeI)'];
+%             end
+%             
+%             ind2keep = setdiff(1:size(trainingDataStructure,2),samples2beRemoved);
+%             dlmwrite(ind2keepfile,ind2keep),
+%             cprintf('[1,0,1]',['Saved ind2keep to ' ind2keepfile '\n'])
+%             
+%             % 
+%             
+%         else
+%             ind2keep = dlmread(ind2keepfile);
+%             cprintf('blue',['Loaded ind2keep from ' ind2keepfile '\n'])
+%         end
+%         
+%         trainingDataStructure = trainingDataStructure(ind2keep);
+% 
+%     end
+
 return    
