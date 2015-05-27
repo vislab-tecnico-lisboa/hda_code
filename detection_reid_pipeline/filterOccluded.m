@@ -1,4 +1,4 @@
-function filterOccluded()
+function [ActiveTestSamples, ActiveTrainSamples, ActivePeds] = filterOccluded()
 %filterOccluded
 %   Reads the information on the cropped images and adds a flag
 %   indicating whether the crop should be used for testing a RE-ID system.
@@ -11,6 +11,7 @@ function filterOccluded()
 %   which are missing. (skipping some computations would not save time).
 
 declareGlobalVariables,
+% if a global flag variable is empty, it's treated has false by the if's
 
 %Default parameters
 % if(~exist('minimumScore','var')),    minimumScore  = 0; end;
@@ -37,10 +38,11 @@ for testCamera = testCameras
         delete([filteredCropsDirectory '/allF.txt']);
         warning('on','MATLAB:DELETE:FileNotFound')
     end
-    if exist([filteredCropsDirectory '/allF.txt'],'file')
-        cprintf('blue',['allF.txt already exists at ' filteredCropsDirectory '\n']),
-        continue,
-    end
+    % letting it run every time to see how many samples were filtered out
+%     if exist([filteredCropsDirectory '/allF.txt'],'file')
+%         cprintf('blue',['allF.txt already exists at ' filteredCropsDirectory '\n']),
+%         continue,
+%     end
     
     % Create file describing the information encoded in the other file
     fid = fopen([filteredCropsDirectory '/info.txt'],'w');
@@ -57,15 +59,32 @@ for testCamera = testCameras
     unique_testSamples_personIds = unique(allDplusGT(:,3));
     pIdofTestNotInTrain = setdiff(unique_testSamples_personIds,[unique_trainStruct_Pid 999]);
 
+    %% Format of cropsMat: 
+    % camera#, frame#, x0, y0, width, height, score, overlapFraction, GFV
     cropsMat = dlmread([cropsDirectory '/allC.txt']);
     nFiles=size(cropsMat,1);
-    wbr = waitbar(0, [displayString ', image 0/' int2str(nFiles)]);
-    dividerWaitbar=10^(floor(log10(nFiles))-1); % Limiting the access to waitbar
+    if waitbarverbose
+        wbr = waitbar(0, [displayString ', image 0/' int2str(nFiles)]);
+        dividerWaitbar=10^(floor(log10(nFiles))-1); % Limiting the access to waitbar
+    end
     % Work on one file at a time
     MatToSave = zeros(nFiles,7);
+    if filterOutRepeatedTestSamples,
+        % Used when filtering repeated samples, to make sure we don't delete
+        % detections of different people just because they happened to coincide
+        % in size and position
+        allDandGT = GTandDetMatcher('detections'); 
+        uniqueSamples = [0 0 0 0 0 0];
+        % allDandGT(2,3) = 34; % for DEBUG purposes
+    end
+    occludedSamplesFiltered = 0;
+    testSamplesNotInTrainingSetFiltered = 0;
+    repeatedTestSamplesFiltered = 0;
     for count=1:nFiles
-        if (round(count/dividerWaitbar)==count/dividerWaitbar) % Limiting the access to waitbar
-            waitbar(count/nFiles, wbr, [displayString ', image ' int2str(count) '/' int2str(nFiles)]);
+        if waitbarverbose
+            if (round(count/dividerWaitbar)==count/dividerWaitbar) % Limiting the access to waitbar
+                waitbar(count/nFiles, wbr, [displayString ', image ' int2str(count) '/' int2str(nFiles)]);
+            end
         end
         dataLine = cropsMat(count,:);
         confidenceScore = dataLine(7);
@@ -84,6 +103,8 @@ for testCamera = testCameras
         elseif overlap>maximumOcclusionRate && GeometricallyFullyVisible==0
             % If above overlap threshold, and with GFV to zero, occluded, put active flag to 0
             active = 0;
+            occludedSamplesFiltered = occludedSamplesFiltered+1;
+            
         else
             error('Not supposed to get here, did we forget a possible case?')
         end
@@ -100,13 +121,52 @@ for testCamera = testCameras
         pedID = allDplusGT(count,3);
         if max(pedID == pIdofTestNotInTrain)
             active = 0;
+            testSamplesNotInTrainingSetFiltered = testSamplesNotInTrainingSetFiltered+1;
         end
+        
+        % Filtering out repeated test samples (test bounding boxes of exact
+        % same size and position)
+        % if BB already exists in uniqueSamples disable the active bit, else add it
+        if filterOutRepeatedTestSamples,
+            BB = [dataLine(2:6) allDandGT(count,3)];
+
+            % DEBUG, trying to see if there are samples of different
+            % pedestrians that would be filtered out because of same size and
+            % position
+            ind = find(sum(uniqueSamples(:,2:5) == repmat(BB(2:5),size(uniqueSamples(:,2:5),1),1),2) == 4);
+            if ~isempty(ind) && uniqueSamples(ind,6) ~= allDandGT(count,3)
+                warning('samples that seems to be same size and position, but not same ped:')
+                warning(int2str(BB)),                     
+                warning(int2str(uniqueSamples(ind,:)));
+            end
+
+            if find(sum(uniqueSamples(:,2:end) == repmat(BB(2:end),size(uniqueSamples(:,2:end),1),1),2) == 5)
+                active = 0;
+                repeatedTestSamplesFiltered = repeatedTestSamplesFiltered+1;
+            else
+                uniqueSamples = [uniqueSamples; BB];
+            end
+        end        
                 
         MatToSave(count,:) = [dataLine(1:6), active];
         
     end
-    close(wbr);
+    if waitbarverbose
+        close(wbr);
+    end
     
+    display([int2str(occludedSamplesFiltered) ' occluded samples were filtered out.'])
+    display([int2str(testSamplesNotInTrainingSetFiltered) ' test samples that were not in the training set were filtered out.'])
+    if filterOutRepeatedTestSamples,
+        display([int2str(repeatedTestSamplesFiltered) ' repeated test samples were filtered out.'])
+    end
+    ActiveTestSamples = sum(MatToSave(:,7));
+    ActiveTrainSamples = length(trainingDataStructure);
+    ActivePeds =   length(unique_trainStruct_Pid);
+    display(['Camera ' int2str(testCamera) ': ' int2str(ActiveTestSamples) ' active test samples, ' ... 
+        int2str(ActiveTrainSamples) ' train samples of '  int2str(ActivePeds) ' pedestrians'])
+    
+    %%
     dlmwrite([filteredCropsDirectory '/allF.txt'],MatToSave);
     cprintf('*[1,0,1]',['Saved allF.txt to ' filteredCropsDirectory '\n'])
 end
