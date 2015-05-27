@@ -1,4 +1,4 @@
-function dist1toPedsPIDsI = BhattacharryaNNReId(HSV,trainingDataStructure)
+function [dist1toPedsPIDsI, sortedDist1toPeds] = BhattacharryaNNReId(HSV,trainingDataStructure)
 %BhattacharryaNNReId Nearest Neighbor classification with Bhattacharrya distance
 % 
 %   dist1toPedsPIDsI = BhattacharryaNNReId(HSV,trainingDataStructure)
@@ -20,6 +20,11 @@ trainSpidVector = [trainingDataStructure.personId];
 unique_trainSpid = unique([trainingDataStructure.personId]);
 
 dist1toAll = BhattDist1toAll(HSV', [trainingDataStructure.feature]');
+[M,I]=min(dist1toAll);
+% assert(I == 1,'The test sample should be in the last position of the dist1toAll (concatenating the training sample features with the test sample feature, with it in the end)')
+assert(I == 1,'The test sample should be in the first position of the dist1toAll (concatenating the training sample features with the test sample feature, with it in the beginning)') % the code below asks for it to be n the beginiing
+dist1toAll = dist1toAll(2:end);
+assert(length(dist1toAll)==length(trainSpidVector),'The code below assumes dist1toAll has only the distances of the test feature to all train samples')
 %dist1toAllF = BhattDist1toAll(testFeatures.F(count,:), [trainingDataStructure.F]');
 % in(HSV' - testFeatures.F(count,:))
 
@@ -42,6 +47,6 @@ for trainPed = 1:nPed
 end
 
 % Sort the distances to all peds, and find index of ground truth
-[Y, I] = sort(dist1toPeds);
+[sortedDist1toPeds, I] = sort(dist1toPeds);
 dist1toPedsPIDsI = dist1toPedsPIDs(I);
 
