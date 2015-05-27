@@ -34,13 +34,23 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
 
     % Loading pre-computed body-part masks
     bodypartmaksksDirectory      = [thisDetectorDetectionsDirectory sprintf('/camera%02d',testCamera) '/Detections'];
-    masks = load([bodypartmaksksDirectory '/pmskset4_128x64.mat']);
-    masks = masks.pmskset;
-    if size(masks,1) ~= nFiles
-        error(['Number of masks (' int2str(size(masks,1)) ') not equal to number of filtered crops (' int2str(nDetections) '). Maybe they were computed with crowd detections?'])
-    end
+%     masks = load([bodypartmaksksDirectory '/pmskset4_128x64.mat']);
+%     masks = masks.pmskset;
+%     if size(masks,1) ~= nFiles
+%         error(['Number of masks (' int2str(size(masks,1)) ') not equal to number of filtered crops (' int2str(nDetections) '). Maybe they were computed with crowd detections?'])
+%     end
+    masks = load_pre_computed_body_part_masks(bodypartmaksksDirectory,nFiles);
     
-    allTestDataStructure_path = [localDetectionsDirectory '/allTestDataStructure_' featureExtractionName '.mat'];
+    allTestDataStructure_path = [localDetectionsDirectory '/allTestDataStructure_' featureExtractionName '_' featureExtractionMethod '.mat'];
+    % Backwards compatibility
+    if strcmp(featureExtractionMethod,'4parts')
+        allTestDataStructure_path_old = [localDetectionsDirectory '/allTestDataStructure_' featureExtractionName '.mat'];
+        if ~exist(allTestDataStructure_path,'file') && exist(allTestDataStructure_path_old,'file')
+            copyfile(allTestDataStructure_path_old,allTestDataStructure_path)
+            warning(['BACKWARDS COMPATIBILITY: Copied original allTestDataStructure to ' allTestDataStructure_path])
+        end
+    end
+
     if recomputeAllCachedInformation && loadImages
         warning('off','MATLAB:DELETE:FileNotFound')
         delete(allTestDataStructure_path),
@@ -55,20 +65,23 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
         %assert(isfield(allTestDataStructure, 'image'),'SEEMS like the cached allTraining file was saved without the images :P...')
         %assert(isfield(allTestDataStructure, 'mask'))
         assert(isfield(allTestDataStructure, 'feature'),'SEEMS like the cached allTraining file was saved without the images :P...')
-   else
-        
-        dividerWaitbar=10^(floor(log10(size(DetMat,1)))-1); % Limiting the access to waitbar
-        wbr = waitbar(0, ['Loading test data, image 0/' int2str(size(DetMat,1))]);
+    else
+        if waitbarverbose
+            dividerWaitbar=10^(floor(log10(size(DetMat,1)))-1); % Limiting the access to waitbar
+            wbr = waitbar(0, ['Loading test data, image 0/' int2str(size(DetMat,1))]);
+        end
         for i=1:size(DetMat,1)
-            if loadImages
-                % Loading images and computing features takes long enough
-                % that you don't need to limit access to waitbar
-                waitbar(i/size(DetMat,1), wbr, ['Loading test data, image ' int2str(i) '/' int2str(size(DetMat,1))]);
-            else
-                if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+            if waitbarverbose
+                if loadImages
+                    % Loading images and computing features takes long enough
+                    % that you don't need to limit access to waitbar
                     waitbar(i/size(DetMat,1), wbr, ['Loading test data, image ' int2str(i) '/' int2str(size(DetMat,1))]);
+                else
+                    if (round(i/dividerWaitbar)==i/dividerWaitbar) % Limiting the access to waitbar
+                        waitbar(i/size(DetMat,1), wbr, ['Loading test data, image ' int2str(i) '/' int2str(size(DetMat,1))]);
+                    end
                 end
-            end                
+            end
             % trainSample = load([trainingSetPath '/' nameList(i).name]);
             testSample = DetMat(i,:);
             allTestDataStructure(i).camera      = testSample(1);
@@ -88,7 +101,9 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
             end
             
         end
-        close(wbr);
+        if waitbarverbose
+            close(wbr);
+        end
         
         if loadImages % time saving measure
             save(allTestDataStructure_path,'allTestDataStructure'),
