@@ -12,9 +12,13 @@ Fmatrix = normalize_feat(m, Fmatrix, normalizationType);
 % diagonal
 
 % tic, fprintf(['Computing bG matrix... Sigmas are: ' num2str(s(1}) ' and ' num2str(s(2}) ' ']),
-bGtstart=tic; fprintf(['Computing bG matrix... Sigmas are all 1 (so we save consistent bGs).. ']),
-VECTORIZED = 0;
-if VECTORIZED 
+if ~exist('verbose','var') || verbose == 1
+    bGtstart=tic; fprintf(['Computing bG matrix... Sigmas are all 1 (so we save consistent bGs).. ']),
+end
+    
+%VECTORIZED = 0;
+%if VECTORIZED 
+try
     %% "Fast" vectorized kernel code
         
     % ASSUMING TRAIN SAMPLES ARE ALL IN THE FIRST LINES OF F
@@ -24,11 +28,15 @@ if VECTORIZED
     for mIt = 1:m
         trainFmatrix{mIt,1} = trainFmatrix{mIt,1}(permids,:);
     end
-    bG = computeBlockKernel(m, ones(size(s)), trainFmatrix); % computing bGs with sigmas == 1
+    % No longer using "s"'s
+    % bG = computeBlockKernel(m, ones(size(s)), trainFmatrix); % computing bGs with sigmas == 1
+    bG = computeBlockKernel(m, ones([m 1]), trainFmatrix); % computing bGs with sigmas == 1
     % DEBUG, computing bGs with sigmas == s
     % bG = computeBlockKernel(m, s, trainFmatrix); 
     
-else 
+% else 
+catch me
+    warning(me.message),
     %% "SLOW" for-loop Kernel code 
     display(['running non-vectorized kernel code, kernelType ' kernelType])
     try % to allocate bG, if too large for memory, use sparse()
@@ -88,4 +96,6 @@ else
 %     inSparcity(bG2)
 %     display(['bG-bG2: ' inSparcity(bG-bG2)])
 end
-toc(bGtstart),
+if ~exist('verbose','var') || verbose == 1
+    toc(bGtstart),
+end
