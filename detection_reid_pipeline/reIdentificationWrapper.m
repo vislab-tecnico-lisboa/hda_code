@@ -4,7 +4,8 @@ function reIdentificationWrapper()
     
 	declareGlobalVariables,
 
-    trainingDataStructure = createTrainStructure();    
+%     trainingDataStructure = createTrainStructure();    
+    trainingDataStructure = createTrainStructure_loading_images_from_seq_files();    
     trainSpidVector = [trainingDataStructure.personId];
     unique_trainSpid = unique([trainingDataStructure.personId]);
     nPed = length(unique_trainSpid);
@@ -47,7 +48,7 @@ function reIdentificationWrapper()
         masks = load_pre_computed_body_part_masks(bodypartmaksksDirectory,nFiles);
 
         
-        if strncmp(reIdentifierName,'MultiView',9)
+        if classifierNeedsAllTestData
             % Special case: algorithms that take as input the whole test set
             % before outputting the re-identification classifications
             
