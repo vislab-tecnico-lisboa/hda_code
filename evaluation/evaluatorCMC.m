@@ -34,7 +34,8 @@ end
 
 declareGlobalVariables, % uses testCameras
 
-[trainingDataStructure, allTrainingDataStructure] = createTrainStructure(0);
+% [trainingDataStructure, allTrainingDataStructure] = createTrainStructure(0);
+[trainingDataStructure, allTrainingDataStructure] = createTrainStructure_loading_images_from_seq_files(0);
 if strcmp(mode,'all')
     unique_trainStruct_Pid = unique([allTrainingDataStructure.personId]);
 else
@@ -274,5 +275,16 @@ end
 % To create a prettier pdf figure
 %set(gcf,'color','w'); export_fig -painters -r600 -q101 6CMCs.pdf
 
+set(gcf,'Position', [ 361   403   313   262])
+xlabel('Rank Score')
+ylabel('Re-identification %')
+axis([1,25,0,100]);
+plotedit on 
 
 return
+
+
+
+
+
+
