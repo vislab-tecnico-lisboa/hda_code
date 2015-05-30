@@ -1,4 +1,4 @@
-function allGMatToSave = GTandDetMatcher(mode)
+function [allGMatToSave, allDplusGTplustBB] = GTandDetMatcher(mode)
 %GTANDDETMATCHER associates GT labels to ReId BB's.
 % Reads GT labels, reads ReId results, computes the overlap between each
 % (GT BB, ReId BB) in a frame, and associates each ReId BB to the GT BB
@@ -11,12 +11,14 @@ function allGMatToSave = GTandDetMatcher(mode)
 
     if ~exist('mode','var')
         mode = 'normal';
+    else
+        assert(length(testCameras) == 1, 'Code only is capable of outputting allDplusGT for one camera.')
     end
     
     for testCamera = testCameras
         fprintf('gtAndDetMatcher: Working on camera: %d\n',testCamera);
         
-        reIdsDirectory         = [experimentDataDirectory sprintf('/camera%02d',       testCamera) '/ReIds_' reIdentifierName];
+        reIdsDirectory         = [experimentDataDirectory sprintf('/camera%02d', testCamera) '/ReIds_' reIdentifierName];
         reIdsAndGtDirectory    = [experimentDataDirectory sprintf('/camera%02d', testCamera) '/ReIdsAndGT_' reIdentifierName];
          
         if ~exist(reIdsAndGtDirectory,'dir'), mkdir(reIdsAndGtDirectory); end;
@@ -54,6 +56,7 @@ function allGMatToSave = GTandDetMatcher(mode)
         % reIdsMat has         : camera#, frame#, x0, y0, width, height, ranked-list 
         % allG supposed to have: camera#, frame#, realId, ranked-list
         allGMatToSave = zeros(nReIds,size(reIdsMat,2)-3);
+        allDplusGTplustBB = zeros(nReIds,size(reIdsMat,2)-3+4);
         for image=1:nReIds
             %if (round(image/dividerWaitbar)==image/dividerWaitbar) % Limiting the access to waitbar
             %    waitbar(image/nReIds, wbr, ['GT Matching on cam ' int2str(testCamera) ', img ' int2str(image) '/' int2str(nReIds)]);
@@ -84,6 +87,7 @@ function allGMatToSave = GTandDetMatcher(mode)
             assert(label==label2)
             
             allGMatToSave(image,:) = [dataLine(1),dataLine(2),label,dataLine(7:end)];
+            allDplusGTplustBB(image,:) = [dataLine(1),dataLine(2),label,dataLine(7:end),dataLine(3:6)];
             
         end
         %close(wbr);
