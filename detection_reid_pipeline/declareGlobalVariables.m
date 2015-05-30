@@ -116,3 +116,11 @@ global filterOutRepeatedTestSamples,
 global featureExtractionMethod,
 
 global waitbarverbose,
+
+% Option to signal reIdentifierWrapper.m to create a structure with all
+% test samples 'testDataStructure' and give it to the classifier, instead
+% of givibg it only a test single sample at a time
+global classifierNeedsAllTestData,
+
+
+
