@@ -37,3 +37,12 @@ if ~strcmp(reIdentifierName,'MSCR_NN_ReId') && strcmp(featureExtractionName,'ext
     reIdentifierHandle = @MSCR_NN_ReId;
     reIdentifierName =  func2str(reIdentifierHandle);
 end
+
+% Checking if classifierNeedsAllTestData is set to 1 for the classifiers
+% that need it. 
+if strncmp(reIdentifierName,'MultiView',9)
+    if classifierNeedsAllTestData ~= 0
+        classifierNeedsAllTestData = 1;
+        warning(['Setting classifierNeedsAllTestData to 1 because ' reIdentifierName ' needs it.']),
+    end
+end
