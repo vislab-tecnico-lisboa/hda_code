@@ -53,9 +53,11 @@ for testCamera = testCameras
 
     % To filter out test samples which the corresponding pedestrians
     % are not in the training set
-    trainingDataStructure = createTrainStructure(0);
+%     trainingDataStructure = createTrainStructure(0);
+    trainingDataStructure = createTrainStructure_loading_images_from_seq_files(0);
     unique_trainStruct_Pid = unique([trainingDataStructure.personId]);
-    allDplusGT = GTandDetMatcher('detections');
+%     allDplusGT = GTandDetMatcher('detections');
+    allDplusGT = GTandDetMatcher_oneCamera('detections',testCamera);
     unique_testSamples_personIds = unique(allDplusGT(:,3));
     pIdofTestNotInTrain = setdiff(unique_testSamples_personIds,[unique_trainStruct_Pid 999]);
 
