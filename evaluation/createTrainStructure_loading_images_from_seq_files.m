@@ -1,4 +1,4 @@
-function [trainingDataStructure, allTrainingDataStructure] = createTrainStructure_loading_images_from_seq_files(loadImages)
+function [trainingDataStructure, allTrainingDataStructure] = createTrainStructure_loading_images_from_seq_files(loadImages, keepImages)
 %createTrainStructure  Creates structure with training data.
 %   function trainingDataStructure = createTrainStructure(loadImages)
 % 
@@ -22,6 +22,9 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
     declareGlobalVariables,
     if ~exist('loadImages','var')
         loadImages = 1;
+    end
+    if ~exist('keepImages','var')
+        keepImages = 0;
     end
             
     if exist([trainingSetPath '/allT.txt'],'file')
@@ -64,7 +67,7 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
         delete(allTrainingDataStructure_path),
         warning('on','MATLAB:DELETE:FileNotFound')
     end
-    if loadImages && exist(allTrainingDataStructure_path,'file')
+    if loadImages && exist(allTrainingDataStructure_path,'file') && ~keepImages
         load(allTrainingDataStructure_path,'allTrainingDataStructure'),
         cprintf('*blue',['Loaded allTtrainingDataStructure from ' allTrainingDataStructure_path '\n'])
         assert(isfield(allTrainingDataStructure, 'camera'))
@@ -135,6 +138,10 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
                 %         subplot(1,5,5)
                 %         bar(HSV),
                 %         in(HSV - trainFeatures.F(i,:)')
+                if keepImages
+                    allTrainingDataStructure(i).mask = mask;
+                    allTrainingDataStructure(i).image = image;
+                end
             end
             
         end
@@ -142,9 +149,11 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
             close(wbr);
         end
         
-        if loadImages % time saving measure
+        if loadImages && ~keepImages % time saving measure
             save(allTrainingDataStructure_path,'allTrainingDataStructure'),
             cprintf('*[1,0,1]',['Saved allTtrainingDataStructure to ' allTrainingDataStructure_path '\n'])
+        elseif loadImages && keepImages
+            warning('Not saving allTtrainingDataStructure because keepImages is ON, and the structure would take a lot of space.')
         end
 
     end
@@ -170,7 +179,7 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
         end
 
         allFPDataStructure_path = [trainingSetPath '/allFPDataStructure_' featureExtractionName '.mat'];
-        if loadImages && exist(allFPDataStructure_path,'file')
+        if loadImages && exist(allFPDataStructure_path,'file') && ~keepImages
             load(allFPDataStructure_path),
             cprintf('*blue',['Loaded allFPDataStructure from ' allFPDataStructure_path '\n'])
             assert(isfield(allFPDataStructure, 'camera'))
@@ -243,7 +252,11 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
                     %subplot(1,5,5)
                     %bar(feature),
                     % END DEBUG visualization
-                    
+                    if keepImages
+                        allFPDataStructure(i).mask = mask;
+                        allFPDataStructure(i).image = image;
+                    end
+
                 end
             end
             if waitbarverbose
@@ -251,9 +264,11 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
             end
 
             %         SAVE HERE
-            if loadImages % time saving measure
+            if loadImages && ~keepImages % time saving measure
                 save(allFPDataStructure_path,'allFPDataStructure'),
                 cprintf('*[1,0,1]',['Saved allFPDataStructure to ' allFPDataStructure_path '\n'])
+            elseif loadImages && keepImages
+                warning('Not saving allFPDataStructure because keepImages is ON, and the structure would take a lot of space.')
             end
 
         end
