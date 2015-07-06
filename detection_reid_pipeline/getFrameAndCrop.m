@@ -1,4 +1,4 @@
-function subImage = getFrameAndCrop(testCamera, frame, bb)
+function [subImage, image] = getFrameAndCrop(testCamera, frame, bb)
 
 declareGlobalVariables,
 
@@ -11,10 +11,14 @@ seqReader.seek(frame);
 image = seqReader.getframe();
 seqReader.close(); 
 
-% and crop
-[nRows,nCols,nPags] = size(image);
-x1 = max(round(bb(1)),1);
-y1 = max(round(bb(2)),1);
-x2 = min(round(bb(1)+bb(3)),nCols);
-y2 = min(round(bb(2)+bb(4)),nRows);
-subImage=image( y1:y2, x1:x2, : );
+if exist('bb','var')
+    % and crop
+    [nRows,nCols,nPags] = size(image);
+    x1 = max(round(bb(1)),1);
+    y1 = max(round(bb(2)),1);
+    x2 = min(round(bb(1)+bb(3)),nCols);
+    y2 = min(round(bb(2)+bb(4)),nRows);
+    subImage=image( y1:y2, x1:x2, : );
+else
+    subImage = [];
+end
