@@ -12,6 +12,14 @@ function plotBodyPartMasks(paddedImage,maskset)
 
 declareGlobalVariables,
 
+if isempty(featureExtractionMethod)
+    if size(maskset,2) == 4
+        featureExtractionMethod = '4parts';
+    elseif size(maskset,2) == 6
+        featureExtractionMethod = '6parts';
+    end
+end
+
 [hei,wid,chs] = size(paddedImage);
 [heiM, widM] = size(maskset{1});
 if max([heiM, widM] ~= [hei, wid])
