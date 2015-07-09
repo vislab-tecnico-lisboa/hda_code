@@ -25,46 +25,99 @@ function [pth,setIds,vidIds,skip,minHt] = dbInfo( name1 )
 % Licensed under the Lesser GPL [see lgpl.txt]
 
 persistent name; % cache last used name
-if(nargin && ~isempty(name1)), name=lower(name1); else
-  if(isempty(name)), name='usatest'; end; end; name1=name;
+if(nargin && ~isempty(name1))
+    name=lower(name1);
+else
+    if(isempty(name))
+        name='hda60a';
+    end;
+end;
+if(iscell(name))
+    name1=name{1,1};
+else
+    name1=name;
+end
 
-vidId=str2double(name1(end-2:end)); % check if name ends in 3 ints
-if(isnan(vidId)), vidId=[]; else name1=name1(1:end-3); end
-setId=str2double(name1(end-1:end)); % check if name ends in 2 ints
-if(isnan(setId)), setId=[]; else name1=name1(1:end-2); end
+% vidId=str2double(name1(end-2:end)); % check if name ends in 3 ints
+% if(isnan(vidId)), vidId=[]; else name1=name1(1:end-3); end
+% setId=str2double(name1(end-1:end)); % check if name ends in 2 ints
+% if(isnan(setId)), setId=[]; else name1=name1(1:end-2); end
 
 switch name1
-  case 'usa' % Caltech Pedestrian Datasets (all)
-    setIds=0:10; subdir='USA'; skip=30; minHt=25;
-    vidIds={0:14 0:5 0:11 0:12 0:11 0:12 0:18 0:11 0:10 0:11 0:11};
-  case 'usatrain' % Caltech Pedestrian Datasets (training)
-    setIds=0:5; subdir='USA'; skip=30; minHt=25;
-    vidIds={0:14 0:5 0:11 0:12 0:11 0:12};
-  case 'usatest' % Caltech Pedestrian Datasets (testing)
-    setIds=6:10; subdir='USA'; skip=30; minHt=25;
-    vidIds={0:18 0:11 0:10 0:11 0:11};
-  case 'inriatrain' % INRIA peds (training)
-    setIds=0; subdir='INRIA'; skip=1; minHt=100; vidIds={0};
-  case 'inriatest' % INRIA peds (testing)
-    setIds=1; subdir='INRIA'; skip=1; minHt=100; vidIds={0};
-  case 'japan' % Caltech Japan data (not publicly avialable)
-    setIds=0:12; subdir='Japan'; skip=30; minHt=25;
-    vidIds={0:5 0:5 0:3 0:5 0:5 0:5 0:5 0:5 0:4 0:4 0:5 0:5 0:4};
-  case 'tudbrussels' % TUD-Brussels dataset
-    setIds=0; subdir='TudBrussels'; skip=1; minHt=50; vidIds={0};
-  case 'eth' % ETH dataset
-    setIds=0:2; subdir='ETH'; skip=1; minHt=50; vidIds={0 0 0};
-  case 'daimler' % Daimler dataset
-    setIds=0; subdir='Daimler'; skip=1; minHt=50; vidIds={0};
-  case 'pietro'
-    setIds=0; subdir='Pietro'; skip=1; minHt=50; vidIds={0};
+
+  case 'hda' % HDA dataset (all)
+    setIds=[2 17 18 19 40 50 53 54 56 57 58 59 60]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0 0 0 0 0 0 0 0 0 0 0 0 0};
+
+  case 'hda1760a' % HDA only 17 and 60
+    setIds=[17 60]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0 0 };
+    
+
+  case 'hdawithout2a' % HDA minus seq02, for which the detector fails
+    setIds=[17 18 19 40 50 53 54 56 57 58 59 60]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0 0 0 0 0 0 0 0 0 0 0 0};
+    
+  case 'hda02a' % HDA seq02
+    setIds=[2]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda17a' % HDA seq17
+    setIds=[17]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda18a' % HDA seq18
+    setIds=[18]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda19a' % HDA seq19
+    setIds=[19]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda40a' % HDA seq40
+    setIds=[40]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda50a' % HDA seq50
+    setIds=[50]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda53a' % HDA seq53
+    setIds=[53]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda54a' % HDA seq54
+    setIds=[54]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda56a' % HDA seq56
+    setIds=[56]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda57a' % HDA seq57
+    setIds=[57]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda58a' % HDA seq58
+    setIds=[58]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda59a' % HDA seq59
+    setIds=[59]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+  case 'hda60a' % HDA seq60
+    setIds=[60]; subdir='HDA'; skip=1; ext='jpg';
+    vidIds={0};
+
+
   otherwise, error('unknown data type: %s',name);
 end
 
 % optionally select only specific set/vid if name ended in ints
-if(~isempty(setId)), setIds=setIds(setId); vidIds=vidIds(setId); end
-if(~isempty(vidId)), vidIds={vidIds{1}(vidId)}; end
+%if(~isempty(setId)), setIds=setIds(setId); vidIds=vidIds(setId); end
+%if(~isempty(vidId)), vidIds={vidIds{1}(vidId)}; end
 
-% actual directory where data is contained
-pth=fileparts(mfilename('fullpath'));
-pth=[pth filesep 'data-' subdir];
+% actual ROOT directory where data is contained
+pth='../../../hda_detections/';
+%pth=[pth filesep 'data-' subdir];

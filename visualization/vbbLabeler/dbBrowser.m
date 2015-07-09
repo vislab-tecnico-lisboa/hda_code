@@ -34,7 +34,7 @@ function dbBrowser
 
 % parameters for dataset and display
 [pth,sIds,vIds,skip] = dbInfo;
-rPth=[pth '/res/hog'];        % directory containing results
+rPth=[pth 'AcfInria'];        % directory containing results
 thr=[];                       % detection threshold
 resize={100/128, 42/64, 0};   % controls resizing of detected bbs
 
@@ -103,9 +103,14 @@ set(hFig, 'Visible', 'on');
   function selectVid( h, evnt, select )
     % open appropriate vbb and seq files
     v=get(hCns(2),'Value'); if(isstruct(sr)), sr=sr.close(); end
-    nmVbb = sprintf('%s/annotations/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
-    nmSeq = sprintf('%s/videos/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
-    A = vbb( 'vbbLoad', nmVbb ); sr = seqIo( nmSeq, 'r' );
+    %nmVbb = sprintf('%s/annotations/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
+    %WE NEED TO READ THIS FILE ../../../hda_annotations/cam60_rev1.txt
+    nmVbb = ['../../../hda_annotations/cam' int2str(sIds(s)) '_rev1.txt'];
+    %nmSeq = sprintf('%s/videos/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
+    %WE NEED TO READ THIS FILE: ../../../hda_image_sequences_matlab/camera60.seq
+    nmSeq = ['../../../hda_image_sequences_matlab/camera' int2str(sIds(s)) '.seq'];
+    A = vbb( 'vbbLoad', nmVbb ); %LOADING GT ANNOTATIONS
+    sr = seqIo( nmSeq, 'r' );    %LOADING IMAGES
     nImg = floor(A.nFrame/skip);
     setStrs(hCns(3), nImg, (1:nImg)*skip-1, 'I', 5 );
     if(nargin<3||select); selectImg(); end;
@@ -155,15 +160,26 @@ set(hFig, 'Visible', 'on');
     sr.seek( img ); I=sr.getframe(); imshow(I);
     
     % adjust checkBoxes appropriately (cbOn: [gt,rs,ev])
-    fRes=sprintf('%s/set%02d/V%03d/I%05d.txt',rPth,sIds(s),vIds{s}(v),img);
+    % WE LOAD THE WHOLE FILE WITH ALL THE DETECTIONS, NOT JUST ONE
+    %fRes=sprintf('%s/set%02d/V%03d/I%05d.txt',rPth,sIds(s),vIds{s}(v),img);
+    fRes=[rPth '/camera' int2str(sIds(s)) '/Detections/allD.txt'];
+    allD = dlmread(fRes);
+    
     if(~exist(fRes,'file')); cbOn(2:3)=0; en='off'; else en='on'; end;
     for i=2:3, set(hCbs(i),'Value',cbOn(i),'Enable',en); end
     
     % load annotation and results
-    lbls = {'person','people','person?'};
+    lbls = {'person','people','person?','*'};
     test = @(lbl,pos,posv) any(strcmp(lbl,{'person'}));
     [gtBs,vsBs,lbls] = vbb('frameAnn', A, img+1, lbls, test);
-    if(any(cbOn(2:3))), dtBs=load(fRes,'-ascii'); else dtBs=[]; end;
+    
+    if(any(cbOn(2:3)))
+        %dtBs=load(fRes,'-ascii');
+        myIndex = allD(:,2)==img;
+        dtBs= allD(myIndex,3:7);
+    else
+        dtBs=[];
+    end;
     if(isempty(dtBs)), dtBs=zeros(0,5); end
     
     % manipulate dtBs appropriately
@@ -173,6 +189,7 @@ set(hFig, 'Visible', 'on');
     % display bbs with or w/o color coding based on output of evalRes
     hold on; vsBs=vsBs(sum(abs(vsBs),2)>0,:);
     if( cbOn(3) )
+        %% THIS IS MAKING BLACK BBS KILL IT WITH FIIIRE
       [gt,dt]=bbGt('evalRes',gtBs,dtBs,.5); cs='krg';
       if(cbOn(1)), ng=size(gt,1);
         for i=1:ng, bbApply('draw',gt(i,1:4),cs(gt(i,5)+2),3,'-'); end

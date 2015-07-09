@@ -759,8 +759,9 @@ ng=length(A.objLists{frame}); ignore=0;
 gt=zeros(ng,5); posv=zeros(ng,4); lbls1=cell(1,ng); keep=true(1,ng);
 for g=1:ng
   o=A.objLists{frame}(g); lbl=A.objLbl{o.id};
-  if(~any(strcmp(lbl,lbls))), keep(g)=0; continue; end
+  %if(~any(strcmp(lbl,lbls))), keep(g)=0; continue; end
   if(~isempty(test)), ignore=~test(lbl,o.pos,o.posv); end
+  ignore=0; %MATTEO
   gt(g,:)=[o.pos ignore]; lbls1{g}=lbl; posv(g,:)=o.posv;
 end
 gt=gt(keep,:); lbls1=lbls1(keep); posv=posv(keep,:);
