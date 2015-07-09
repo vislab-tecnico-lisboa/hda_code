@@ -118,6 +118,7 @@ end
 %if(~isempty(setId)), setIds=setIds(setId); vidIds=vidIds(setId); end
 %if(~isempty(vidId)), vidIds={vidIds{1}(vidId)}; end
 
+declareGlobalVariables,
 % actual ROOT directory where data is contained
-pth='../../../hda_detections/';
+pth= [hdaRootDirectory '/hda_detections/'];
 %pth=[pth filesep 'data-' subdir];

@@ -87,9 +87,9 @@ dataNames = {
 
 
 %ZIPPO (I put this here so I can search for this line easily :-) )
-dataNames = dataNames(15); % 15 = Camera 60
+dataNames = dataNames(2); % 15 = Camera 60
 exps = exps(1);           % Reasonable
-algs = algs([1 2 3]); % 1 = ACF trained on INRIA, nOctUp0 during the detection
+algs = algs([1 ]); % 1 = ACF trained on INRIA, nOctUp0 during the detection
 dbInfo(dataNames);
 
 
@@ -410,9 +410,9 @@ for i=1:nExp
         %OUR CODE TO READ THE GT
         %WE NEED TO LOAD THE GT DATA FROM
         %../../../hda_detections/GtAnnotationsAll/camera60/Detections/allD.txt
-        detectionsFileName=['../../../hda_detections/GtAnnotationsAll/camera' int2str(setIds(s)) '/Detections/allD.txt']
+        detectionsFileName=[hdaRootDirectory '/hda_detections/GtAnnotationsAll/camera' int2str(setIds(s)) '/Detections/allD.txt']
         A=dlmread(detectionsFileName);
-        tempData=vbb('vbbLoadTxt',['../../../hda_annotations/cam' int2str(setIds(s)) '_rev1.txt']);
+        tempData=vbb('vbbLoadTxt',[hdaRootDirectory '/hda_annotations/cam' int2str(setIds(s)) '_rev1.txt']);
         
         frames=skip-1:skip:tempData.nFrame-1;
         bbs=[A(:,2:end-1) zeros(size(A,1),1)];
@@ -463,10 +463,10 @@ for i=1:nAlg
         %    for v=1:length(vidIds{s}), v1=vidIds{s}(v);
         %v=1; %TEST MATTEO
         %A=loadVbb(s,v);
-        detectionsFileName=['../../../hda_detections/' algs(i).name '/camera' int2str(s1) '/Detections/allD.txt']
+        detectionsFileName=[hdaRootDirectory '/hda_detections/' algs(i).name '/camera' int2str(s1) '/Detections/allD.txt'];
         A=dlmread(detectionsFileName);
         
-        tempData=vbb('vbbLoadTxt',['../../../hda_annotations/cam' int2str(s1) '_rev1.txt']);
+        tempData=vbb('vbbLoadTxt',[hdaRootDirectory '/hda_annotations/cam' int2str(s1) '_rev1.txt']);
         
         frames=skip-1:skip:tempData.nFrame-1;
         %vName=sprintf('%s/set%02d/V%03d',aDir,s1,v1);

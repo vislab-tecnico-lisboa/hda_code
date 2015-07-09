@@ -1,4 +1,4 @@
-function dbBrowser
+function dbBrowser(hdaRootDirectory)
 % Browse database annotations and detection results.
 %
 % Complementary to vbbPlayer. Cannot display video efficiently (use
@@ -32,8 +32,10 @@ function dbBrowser
 % Please email us if you find bugs, or have suggestions or questions!
 % Licensed under the Lesser GPL [see lgpl.txt]
 
+% declareGlobalVariables,
+
 % parameters for dataset and display
-[pth,sIds,vIds,skip] = dbInfo;
+[pth,sIds,vIds,skip] = dbInfo('hdawithout2a');
 rPth=[pth 'AcfInria'];        % directory containing results
 thr=[];                       % detection threshold
 resize={100/128, 42/64, 0};   % controls resizing of detected bbs
@@ -105,10 +107,10 @@ set(hFig, 'Visible', 'on');
     v=get(hCns(2),'Value'); if(isstruct(sr)), sr=sr.close(); end
     %nmVbb = sprintf('%s/annotations/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
     %WE NEED TO READ THIS FILE ../../../hda_annotations/cam60_rev1.txt
-    nmVbb = ['../../../hda_annotations/cam' int2str(sIds(s)) '_rev1.txt'];
+    nmVbb = [hdaRootDirectory '/hda_annotations/cam' int2str(sIds(s)) '_rev1.txt'];
     %nmSeq = sprintf('%s/videos/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
     %WE NEED TO READ THIS FILE: ../../../hda_image_sequences_matlab/camera60.seq
-    nmSeq = ['../../../hda_image_sequences_matlab/camera' int2str(sIds(s)) '.seq'];
+    nmSeq = [hdaRootDirectory '/hda_image_sequences_matlab/camera' int2str(sIds(s)) '.seq'];
     A = vbb( 'vbbLoad', nmVbb ); %LOADING GT ANNOTATIONS
     sr = seqIo( nmSeq, 'r' );    %LOADING IMAGES
     nImg = floor(A.nFrame/skip);
