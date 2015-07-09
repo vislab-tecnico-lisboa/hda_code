@@ -41,7 +41,7 @@ end
 % Checking if classifierNeedsAllTestData is set to 1 for the classifiers
 % that need it. 
 if strncmp(reIdentifierName,'MultiView',9)
-    if classifierNeedsAllTestData ~= 0
+    if classifierNeedsAllTestData ~= 1
         classifierNeedsAllTestData = 1;
         warning(['Setting classifierNeedsAllTestData to 1 because ' reIdentifierName ' needs it.']),
     end
