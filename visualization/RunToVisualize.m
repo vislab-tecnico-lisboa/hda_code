@@ -5,7 +5,7 @@
 %  3. Add to the Matlab path the `hda_code` folder (fill in the `addpath(genpath( ... ))` ),,
 %  4. and then run MATlab script `HDA_Dataset\hda_code\visualization\ RunToVisualize.m`
 
-run ../detection_reid_pipeline/Computer_Specific_Dataset_Directory_development.m
+run ../detection_reid_pipeline/Computer_Specific_Dataset_Directory.m
 
 dbBrowser(hdaRootDirectory),
 
