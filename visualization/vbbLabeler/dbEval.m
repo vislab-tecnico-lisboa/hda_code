@@ -412,7 +412,7 @@ for i=1:nExp
         %../../../hda_detections/GtAnnotationsAll/camera60/Detections/allD.txt
         detectionsFileName=[hdaRootDirectory '/hda_detections/GtAnnotationsAll/camera' int2str(setIds(s)) '/Detections/allD.txt']
         A=dlmread(detectionsFileName);
-        tempData=vbb('vbbLoadTxt',[hdaRootDirectory '/hda_annotations/cam' int2str(setIds(s)) '_rev1.txt']);
+        tempData=vbb('vbbLoadTxt',[hdaRootDirectory '/hda_annotations/cam' int2str(setIds(s)) '.txt']);
         
         frames=skip-1:skip:tempData.nFrame-1;
         bbs=[A(:,2:end-1) zeros(size(A,1),1)];
@@ -466,7 +466,7 @@ for i=1:nAlg
         detectionsFileName=[hdaRootDirectory '/hda_detections/' algs(i).name '/camera' int2str(s1) '/Detections/allD.txt'];
         A=dlmread(detectionsFileName);
         
-        tempData=vbb('vbbLoadTxt',[hdaRootDirectory '/hda_annotations/cam' int2str(s1) '_rev1.txt']);
+        tempData=vbb('vbbLoadTxt',[hdaRootDirectory '/hda_annotations/cam' int2str(s1) '.txt']);
         
         frames=skip-1:skip:tempData.nFrame-1;
         %vName=sprintf('%s/set%02d/V%03d',aDir,s1,v1);
