@@ -3,7 +3,7 @@ function evaluatorPrecisionRecall()
 	declareGlobalVariables,
 	
     loadImages = 0; % No need to load images, just using the training structure to figure out the training pedestrian IDs
-    trainingDataStructure = createTrainStructure(loadImages); 
+    trainingDataStructure = createTrainStructure_loading_images_from_seq_files(loadImages); 
 
     for testCamera = testCameras
         
