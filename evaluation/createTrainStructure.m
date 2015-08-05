@@ -18,6 +18,7 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
 %       - allT.txt file, with one line per sample with the format [camera frame personID occluded_bit] 
 %       - pmskset4_128x64.mat: body-part mask file 
 
+    error('don''t call createTrainStructure, use createTrainStructure_loading_images_from_seq_files')
 
     declareGlobalVariables,
     if ~exist('loadImages','var')
