@@ -5,8 +5,8 @@
 %   -'addpath(genpath( ... ))' with the location of the 'hda_code' folder (which
 %   need not be inside the HDA_Dataset folder) 
 
-hdaRootDirectory ='/full/path/to/HDA_Dataset_V1.1';
-addpath(genpath(['/full/path/to/hda_code']));
+hdaRootDirectory ='/full/path/to/HDA_Dataset_V1.2';
+addpath(genpath(['/full/path/to/hda_code-master']));
 
 
 % Code for allowing my and my co-worker's computers to run the same script. 
