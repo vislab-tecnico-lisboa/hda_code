@@ -107,7 +107,7 @@ set(hFig, 'Visible', 'on');
     v=get(hCns(2),'Value'); if(isstruct(sr)), sr=sr.close(); end
     %nmVbb = sprintf('%s/annotations/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
     %WE NEED TO READ THIS FILE ../../../hda_annotations/cam60_rev1.txt
-    nmVbb = [hdaRootDirectory '/hda_annotations/cam' int2str(sIds(s)) '_rev1.txt'];
+    nmVbb = [hdaRootDirectory '/hda_annotations/cam' int2str(sIds(s)) '.txt'];
     %nmSeq = sprintf('%s/videos/set%02i/V%03i',pth,sIds(s),vIds{s}(v));
     %WE NEED TO READ THIS FILE: ../../../hda_image_sequences_matlab/camera60.seq
     nmSeq = [hdaRootDirectory '/hda_image_sequences_matlab/camera' int2str(sIds(s)) '.seq'];
