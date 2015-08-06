@@ -46,3 +46,9 @@ if strncmp(reIdentifierName,'MultiView',9)
         warning(['Setting classifierNeedsAllTestData to 1 because ' reIdentifierName ' needs it.']),
     end
 end
+
+
+if waitbarverbose && ismac
+    warning('In Mac waitbar seemed unstable, setting waitbarverbose to 0')
+    waitbarverbose = 0;
+end
