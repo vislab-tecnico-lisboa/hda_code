@@ -36,7 +36,7 @@ function dbBrowser(hdaRootDirectory)
 
 % parameters for dataset and display
 [pth,sIds,vIds,skip] = dbInfo('hdawithout2a');
-rPth=[hdaRootDirectory pth 'AcfInria'];        % directory containing results
+rPth=[pth 'AcfInria'];        % directory containing results
 thr=[];                       % detection threshold
 resize={100/128, 42/64, 0};   % controls resizing of detected bbs
 
