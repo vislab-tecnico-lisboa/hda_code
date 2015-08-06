@@ -44,6 +44,7 @@ Computer_Specific_Dataset_Directory,
 
 recomputeAllCachedInformation = 1;
 offlineCrop_and_not_OnTheFlyFeatureExtraction = 0;
+waitbarverbose = 1;         % to show waitbar's during code computation
 experimentVersion = '001';
 
 setUserDefinedExperimentParameters(experimentVersion); 
