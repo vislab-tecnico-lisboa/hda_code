@@ -4,6 +4,7 @@
 % folder, 
 %   -'addpath(genpath( ... ))' with the location of the 'hda_code' folder (which
 %   need not be inside the HDA_Dataset folder) 
+global hdaRootDirectory
 
 hdaRootDirectory ='/full/path/to/HDA_Dataset_V1.2';
 addpath(genpath(['/full/path/to/hda_code-master']));
