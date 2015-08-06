@@ -120,5 +120,6 @@ end
 
 declareGlobalVariables,
 % actual ROOT directory where data is contained
+assert(~isempty(hdaRootDirectory),'hdaRootDirectory empty. You need to fill it in Computer_Specific_Dataset_Directory.m first')
 pth= [hdaRootDirectory '/hda_detections/'];
 %pth=[pth filesep 'data-' subdir];
