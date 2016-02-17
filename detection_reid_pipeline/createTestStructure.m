@@ -1,4 +1,4 @@
-function allTestDataStructure = createTestStructure(testCamera,loadImages)
+function allTestDataStructure = createTestStructure(testCamera,loadImages,keepImages)
 %createTrainStructure  Creates structure with training data.
 %   function trainingDataStructure = createTrainStructure(loadImages)
 % 
@@ -22,6 +22,9 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
     declareGlobalVariables,
     if ~exist('loadImages','var')
         loadImages = 1;
+    end
+    if ~exist('keepImages','var')
+        keepImages = 0;
     end
 
     
@@ -56,7 +59,7 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
         delete(allTestDataStructure_path),
         warning('on','MATLAB:DELETE:FileNotFound')
     end
-    if loadImages && exist(allTestDataStructure_path,'file')
+    if ~loadImages && exist(allTestDataStructure_path,'file')
         load(allTestDataStructure_path),
         cprintf('*blue',['Loaded allTestDataStructure from ' allTestDataStructure_path '\n'])
         assert(isfield(allTestDataStructure, 'camera'))
@@ -98,6 +101,11 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
                 paddedImage = smartPadImageToBodyPartMaskSize(subImage);            
                 feature = featureExtractionHandle(paddedImage,masks(i,:));
                 allTestDataStructure(i).feature         = feature;
+                if keepImages
+                    allTestDataStructure(i).mask = masks(i,:);
+                    allTestDataStructure(i).image = subImage;
+                end
+
             end
             
         end
@@ -105,9 +113,11 @@ function allTestDataStructure = createTestStructure(testCamera,loadImages)
             close(wbr);
         end
         
-        if loadImages % time saving measure
+        if loadImages && ~keepImages % time saving measure
             save(allTestDataStructure_path,'allTestDataStructure'),
             cprintf('*[1,0,1]',['Saved allTestDataStructure to ' allTestDataStructure_path '\n'])
+        elseif loadImages && keepImages
+            warning('Not saving allTestDataStructure because keepImages is ON, and the structure would take a lot of space.')
         end
 
     end
