@@ -254,7 +254,7 @@ function [trainingDataStructure, allTrainingDataStructure] = createTrainStructur
                     % END DEBUG visualization
                     if keepImages
                         allFPDataStructure(i).mask = mask;
-                        allFPDataStructure(i).image = image;
+                        allFPDataStructure(i).image = subImage;
                     end
 
                 end
